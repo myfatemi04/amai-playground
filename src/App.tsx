@@ -22,7 +22,12 @@ async function api(path: string, body: any) {
 }
 
 async function generate(prompt: string, context = "") {
-  const result = await api("generate_completion", { prompt: `Instruction: ${prompt}\n\nResult:\n${context}` });
+  // const result = await api("generate_completion", {
+  //   prompt: `Instruction: ${prompt}\n\nResult:\n${context}`,
+  // });
+  const result = await api("generate_completion", {
+    prompt: `${prompt}\n${context}`,
+  });
   return (result.completion ?? "[error]") as string;
 }
 
@@ -138,9 +143,47 @@ function App() {
   }, [completionIndex, completions, interactionId]);
 
   return (
-    <div style={{ padding: "2rem", display: "flex", flexDirection: "column" }}>
-      <h1>AugmateAI Playground</h1>
-      <span>Give an instruction</span>
+    <div
+      style={{
+        padding: "2rem",
+        display: "flex",
+        flexDirection: "column",
+        width: "calc(min(100vw, max(60vw, 40rem)))",
+        margin: "0 auto",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "0.5rem",
+        }}
+      >
+        <img
+          src="logo192.png"
+          alt="AugmateAI Logo"
+          style={{ width: "3rem", height: "3rem" }}
+        />
+        <span
+          style={{
+            display: "inline-block",
+            fontSize: "3rem",
+            fontWeight: "bold",
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft: "0.5rem",
+          }}
+        >
+          AugmateAI Playground
+        </span>
+      </div>
+      <span>
+        Powered by large language models. See the homepage:{" "}
+        <a href="https://augmateai.michaelfatemi.com/">AugmateAI</a>
+      </span>
+      <span style={{ fontSize: "0.75rem" }}>
+        The text you input here may be used to assess future use cases.
+      </span>
       <input
         type="text"
         style={{ marginTop: "0.5rem" }}
@@ -150,6 +193,7 @@ function App() {
           }
         }}
         onChange={(e) => setInstruction(e.target.value)}
+        placeholder="Write an instruction..."
       />
       <div style={{ display: "flex", marginTop: "0.5rem" }}>
         {completions.length === 0 ? (
