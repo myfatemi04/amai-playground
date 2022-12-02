@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 async function getToken() {
-  return "$demo";
+  return "$playground";
 }
 
 async function api(path: string, body: any) {
@@ -21,24 +21,35 @@ async function api(path: string, body: any) {
   return await result.json();
 }
 
-async function generate(prompt: string) {
-  const result = await api("generate_completion", { prompt });
-  return result.completion as string;
+async function generate(prompt: string, context = "") {
+  const result = await api("generate_completion", { prompt: `Instruction: ${prompt}\n\nResult:\n${context}` });
+  return (result.completion ?? "[error]") as string;
 }
 
 // Returns ID of the inserted interaction
 async function logInstructionSubmission(prompt: string) {
-  const result = await api("log", {
+  const result = await api("log_interactions", {
     type: "create_interaction",
     prompt,
   });
-  return result.id as string;
+  return result.interaction_id as string;
 }
 
 async function logCompletionCopy(interactionId: string, completion: string) {
-  return await api("log", {
+  return await api("log_interactions", {
     type: "log_copy",
-    interactionId,
+    interaction_id: interactionId,
+    completion,
+  });
+}
+
+async function logCompletionContinuation(
+  interactionId: string,
+  completion: string
+) {
+  return await api("log_interactions", {
+    type: "log_continuation",
+    interaction_id: interactionId,
     completion,
   });
 }
@@ -48,9 +59,9 @@ async function logCompletionFeedback(
   completion: string,
   feedback: string
 ) {
-  return await api("log", {
+  return await api("log_interactions", {
     type: "log_feedback",
-    interactionId,
+    interaction_id: interactionId,
     completion,
     feedback,
   });
@@ -98,9 +109,13 @@ function App() {
     }
   }, [completionIndex, completions, instruction]);
 
-  const generateMore = useCallback(() => {
+  const generateMore = useCallback(async () => {
     setGenerating(true);
-    generate(instruction + completions[completionIndex])
+    await logCompletionContinuation(
+      interactionId,
+      completions[completionIndex]
+    );
+    generate(instruction, completions[completionIndex])
       .then((completion) => {
         setCompletions([
           ...completions.slice(0, completionIndex),
@@ -109,7 +124,7 @@ function App() {
         ]);
       })
       .finally(() => setGenerating(false));
-  }, [completionIndex, completions, instruction]);
+  }, [completionIndex, completions, instruction, interactionId]);
 
   useEffect(() => {
     setCopied(false);
