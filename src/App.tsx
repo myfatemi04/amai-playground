@@ -1,37 +1,63 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-async function generate(prompt: string) {
-  // const token = await getToken();
-  const token = "$demo";
-  if (token == null) {
-    return "<No access token provided>" + JSON.stringify(token);
-  }
-  const req = await fetch(
-    "https://7azz4l2unk.execute-api.us-east-1.amazonaws.com/generate_completion",
+async function getToken() {
+  return "$demo";
+}
+
+async function api(path: string, body: any) {
+  const result = await fetch(
+    `https://7azz4l2unk.execute-api.us-east-1.amazonaws.com/${path}`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt, token }),
+      body: JSON.stringify({
+        ...body,
+        token: await getToken(),
+      }),
     }
   );
-  const result = await req.json();
+  return await result.json();
+}
+
+async function generate(prompt: string) {
+  const result = await api("generate_completion", { prompt });
   return result.completion as string;
 }
 
-async function logInstructionSubmission(instruction: string) {}
+// Returns ID of the inserted interaction
+async function logInstructionSubmission(prompt: string) {
+  const result = await api("log", {
+    type: "create_interaction",
+    prompt,
+  });
+  return result.id as string;
+}
 
-async function logCompletionCopy(instruction: string, completion: string) {}
+async function logCompletionCopy(interactionId: string, completion: string) {
+  return await api("log", {
+    type: "log_copy",
+    interactionId,
+    completion,
+  });
+}
 
 async function logCompletionFeedback(
-  instruction: string,
+  interactionId: string,
   completion: string,
   feedback: string
-) {}
+) {
+  return await api("log", {
+    type: "log_feedback",
+    interactionId,
+    completion,
+    feedback,
+  });
+}
 
 function App() {
-  const [lastSubmittedInstruction, setLastSubmittedInstruction] = useState("");
+  const [interactionId, setInteractionId] = useState("");
   const [instruction, setInstruction] = useState("");
   const [generating, setGenerating] = useState(false);
   const [completionIndex, setCompletionIndex] = useState(0);
@@ -40,14 +66,14 @@ function App() {
   const [sentFeedback, setSentFeedback] = useState(false);
   const feedbackRef = useRef<HTMLInputElement>(null);
 
-  const submit = useCallback(() => {
+  const submit = useCallback(async () => {
     setGenerating(true);
-    logInstructionSubmission(instruction);
+    const interactionId = await logInstructionSubmission(instruction);
+    setInteractionId(interactionId);
     generate(instruction)
       .then((completion) => {
         setCompletionIndex(0);
         setCompletions([completion]);
-        setLastSubmittedInstruction(instruction);
       })
       .finally(() => setGenerating(false));
   }, [instruction]);
@@ -93,8 +119,8 @@ function App() {
   const copy = useCallback(() => {
     navigator.clipboard.writeText(completions[completionIndex]);
     setCopied(true);
-    logCompletionCopy(lastSubmittedInstruction, completions[completionIndex]);
-  }, [completionIndex, completions, lastSubmittedInstruction]);
+    logCompletionCopy(interactionId, completions[completionIndex]);
+  }, [completionIndex, completions, interactionId]);
 
   return (
     <div style={{ padding: "2rem", display: "flex", flexDirection: "column" }}>
@@ -162,7 +188,7 @@ function App() {
                   return;
                 }
                 logCompletionFeedback(
-                  lastSubmittedInstruction,
+                  interactionId,
                   completions[completionIndex],
                   feedbackRef.current.value
                 ).then(() => setSentFeedback(true));
