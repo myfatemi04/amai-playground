@@ -3,12 +3,7 @@ import ReactDOM from "react-dom/client";
 import Research from "./Research";
 import "./index.css";
 import Generation from "./Generation";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  redirect,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import reportWebVitals from "./reportWebVitals";
 import NotFound from "./NotFound";
 import Home from "./Home";
