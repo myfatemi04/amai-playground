@@ -1,30 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-
-async function getToken() {
-  return "$playground";
-}
-
-async function api(path: string, body: any) {
-  const result = await fetch(
-    `https://7azz4l2unk.execute-api.us-east-1.amazonaws.com/${path}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...body,
-        token: await getToken(),
-      }),
-    }
-  );
-  return await result.json();
-}
+import { api } from "./api";
+import Header from "./Header";
 
 async function generate(prompt: string, context = "") {
-  // const result = await api("generate_completion", {
-  //   prompt: `Instruction: ${prompt}\n\nResult:\n${context}`,
-  // });
   const result = await api("generate_completion", {
     prompt: `${prompt}\n${context}`,
   });
@@ -72,7 +50,7 @@ async function logCompletionFeedback(
   });
 }
 
-function App() {
+function Generation() {
   const [interactionId, setInteractionId] = useState("");
   const [instruction, setInstruction] = useState("");
   const [generating, setGenerating] = useState(false);
@@ -152,31 +130,7 @@ function App() {
         margin: "0 auto",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          marginBottom: "0.5rem",
-        }}
-      >
-        <img
-          src="logo192.png"
-          alt="AugmateAI Logo"
-          style={{ width: "3rem", height: "3rem" }}
-        />
-        <span
-          style={{
-            display: "inline-block",
-            fontSize: "3rem",
-            fontWeight: "bold",
-            marginTop: 0,
-            marginBottom: 0,
-            marginLeft: "0.5rem",
-          }}
-        >
-          AugmateAI Playground
-        </span>
-      </div>
+      <Header>AugmateAI Text Generation Playground</Header>
       <span>
         Powered by large language models. See the homepage:{" "}
         <a href="https://augmateai.michaelfatemi.com/">AugmateAI</a>
@@ -184,6 +138,7 @@ function App() {
       <span style={{ fontSize: "0.75rem" }}>
         The text you input here may be used to assess future use cases.
       </span>
+      <h3 style={{marginBottom: 0}}>Type instructions for text to generate.</h3>
       <input
         type="text"
         style={{ marginTop: "0.5rem" }}
@@ -277,4 +232,4 @@ function App() {
   );
 }
 
-export default App;
+export default Generation;

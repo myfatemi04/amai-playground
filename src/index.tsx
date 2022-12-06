@@ -1,15 +1,33 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import Research from "./Research";
+import "./index.css";
+import Generation from "./Generation";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  redirect,
+} from "react-router-dom";
+import reportWebVitals from "./reportWebVitals";
+import NotFound from "./NotFound";
+import Home from "./Home";
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <Routes>
+        <Route path="/">
+          <Route path="generation" element={<Generation />} />
+          <Route path="research" element={<Research />} />
+          <Route path="*" element={<NotFound />} />
+          <Route index element={<Home />} />
+        </Route>
+      </Routes>
+    </Router>
   </React.StrictMode>
 );
 
