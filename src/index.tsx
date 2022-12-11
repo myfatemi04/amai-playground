@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import reportWebVitals from "./reportWebVitals";
 import NotFound from "./NotFound";
 import Home from "./Home";
+import ResearchWriting from "./researchwriting/ResearchWriting";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -18,6 +19,7 @@ root.render(
         <Route path="/">
           <Route path="generation" element={<Generation />} />
           <Route path="research" element={<Research />} />
+          <Route path="researchwriting" element={<ResearchWriting />} />
           <Route path="*" element={<NotFound />} />
           <Route index element={<Home />} />
         </Route>
