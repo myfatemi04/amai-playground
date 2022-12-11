@@ -313,10 +313,18 @@ export default function ResearchWriting() {
         createSuggestion();
       } else if ((e.code === "Tab" || e.code === "ArrowRight") && suggestion) {
         e.preventDefault();
-        const before = textarea.value.slice(0, suggestion.position);
-        const after = textarea.value.slice(suggestion.position);
-        const text = before + suggestionText + after;
-        setContent(text);
+				if (suggestion.type === 'searchResults') {
+					const beforeIncludingQuestion = textarea.value.slice(0, suggestion.position);
+					const beforeWithoutQuestion = beforeIncludingQuestion.slice(0, beforeIncludingQuestion.lastIndexOf('('));
+					const after = textarea.value.slice(suggestion.position);
+					const text = beforeWithoutQuestion + suggestionText + after;
+					setContent(text);
+				} else {
+					const before = textarea.value.slice(0, suggestion.position);
+					const after = textarea.value.slice(suggestion.position);
+					const text = before + suggestionText + after;
+					setContent(text);
+				}
         setSuggestion(null);
       } else {
         setSuggestion(null);
@@ -327,7 +335,7 @@ export default function ResearchWriting() {
 
   const textareaStyle: CSSProperties = {
     fontFamily: "sans-serif",
-    fontSize: "0.75rem",
+    fontSize: "1rem",
     padding: "1rem",
     inset: 0,
     position: "absolute",
