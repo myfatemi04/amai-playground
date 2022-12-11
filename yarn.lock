@@ -1529,6 +1529,11 @@
   "resolved" "https://registry.npmjs.org/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz"
   "version" "2.0.4"
 
+"@mozilla/readability@^0.4.2":
+  "integrity" "sha512-48MJXzi4Dhy2fJ3lGjmwdEJKoMmn3oiYew9n/1OW6cZy78hAzRIyDJDBCGrg4PBFDyY4xos+H4LCFn5QVRDcfw=="
+  "resolved" "https://registry.npmjs.org/@mozilla/readability/-/readability-0.4.2.tgz"
+  "version" "0.4.2"
+
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   "integrity" "sha512-54/JRvkLIzzDWshCWfuhadfrfZVPiElY8Fcgmg1HroEly/EDSszzhBAsarCux+D/kOslTRquNzuyGSmUSTTHGg=="
   "resolved" "https://registry.npmjs.org/@nicolo-ribaudo/eslint-scope-5-internals/-/eslint-scope-5-internals-5.1.1-v1.tgz"
