@@ -3,6 +3,7 @@ import React, {
   CSSProperties,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -34,6 +35,7 @@ type Suggestion =
       cache: SearchResultsSuggestionCache;
       position: number;
       question: string;
+      previewResultURL: string | null;
     }
   | {
       type: "none";
@@ -131,18 +133,6 @@ export default function ResearchWriting() {
     null | "errored" | "pending"
   >(null);
 
-  useEffect(() => {
-    getPageHtml("https://en.wikipedia.org/wiki/Orange_juice").then((html) => {
-      const article = parse(html);
-      if (article) {
-        const content = article.textContent.replace(/[\r\n]{3+}/g, "\n\n");
-        console.log(content);
-      } else {
-        console.log("Article could not be parsed");
-      }
-    });
-  }, []);
-
   const createSuggestion = useCallback(async () => {
     if (!textareaRef.current) {
       return;
@@ -173,6 +163,7 @@ export default function ResearchWriting() {
           position: selection.selectionEnd,
           cache: {},
           question,
+          previewResultURL: null,
         });
         setGenerationStatus(null);
         return;
@@ -200,14 +191,19 @@ export default function ResearchWriting() {
     }
   }, []);
 
-  const finishSuggestionWithSearchResult = useCallback(
-    async (url: string) => {
-      if (!suggestion) {
-        console.error("No suggestion to finish");
+  useEffect(() => {
+    if (suggestion?.type !== "searchResults") {
+      return;
+    }
+    async function run() {
+      if (suggestion?.type !== "searchResults") {
+        console.warn(
+          "Suggestion is not a search result, but passed initial check"
+        );
         return;
       }
-      if (suggestion.type !== "searchResults") {
-        console.error("Suggestion is not based on search results");
+      const url = suggestion.previewResultURL;
+      if (!url) {
         return;
       }
       const pageResult = suggestion.results.pages.find(
@@ -225,8 +221,9 @@ export default function ResearchWriting() {
           console.error(e);
           pageContent = null;
         }
+        let cacheContent: typeof suggestion["cache"][string];
         if (pageContent === null) {
-          suggestion.cache[url] = {
+          cacheContent = {
             parseable: false,
             pageContent: null,
             completion: null,
@@ -242,7 +239,7 @@ export default function ResearchWriting() {
             0,
             contextWithQuestion.lastIndexOf("(")
           );
-          suggestion.cache[url] = {
+          cacheContent = {
             parseable: true,
             pageContent,
             completion: await getCompletionBasedOnSearchResult(
@@ -251,26 +248,46 @@ export default function ResearchWriting() {
             ),
           };
         }
-      }
-
-      const completionForURL = suggestion.cache[url]!;
-
-      if (!completionForURL.parseable) {
         setSuggestion({
-          type: "none",
-          position: suggestion.position,
-        });
-        return;
-      } else {
-        setSuggestion({
-          type: "text",
-          text: completionForURL.completion,
-          position: suggestion.position,
+          ...suggestion,
+          cache: {
+            ...suggestion.cache,
+            [url]: cacheContent,
+          },
         });
       }
-    },
-    [content, suggestion]
-  );
+    }
+    run();
+  }, [content, suggestion]);
+
+  const suggestionText = useMemo(() => {
+    if (!suggestion) {
+      return null;
+    }
+
+    if (suggestion.type === "text") {
+      return suggestion.text;
+    }
+
+    if (suggestion.type === "none") {
+      return "(no suggestion)";
+    }
+
+    // suggestion.type === 'searchResults'
+    if (!suggestion.previewResultURL) {
+      return "(hover over a search result)";
+    }
+
+    if (!suggestion.cache[suggestion.previewResultURL]) {
+      return `(loading from URL ${suggestion.previewResultURL})`;
+    }
+
+    if (!suggestion.cache[suggestion.previewResultURL].parseable) {
+      return `(unable to load data from URL ${suggestion.previewResultURL})`;
+    }
+
+    return suggestion.cache[suggestion.previewResultURL].completion;
+  }, [suggestion]);
 
   const onTextareaChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -294,21 +311,18 @@ export default function ResearchWriting() {
       const textarea = textareaRef.current;
       if (e.code === "Enter" && e.ctrlKey) {
         createSuggestion();
-      } else if (
-        (e.code === "Tab" || e.code === "ArrowRight") &&
-        suggestion?.type === "text"
-      ) {
+      } else if ((e.code === "Tab" || e.code === "ArrowRight") && suggestion) {
         e.preventDefault();
         const before = textarea.value.slice(0, suggestion.position);
         const after = textarea.value.slice(suggestion.position);
-        const text = before + suggestion.text + after;
+        const text = before + suggestionText + after;
         setContent(text);
         setSuggestion(null);
       } else {
         setSuggestion(null);
       }
     },
-    [createSuggestion, suggestion]
+    [createSuggestion, suggestion, suggestionText]
   );
 
   const textareaStyle: CSSProperties = {
@@ -391,14 +405,7 @@ export default function ResearchWriting() {
                       whiteSpace: "pre-wrap",
                     }}
                   >
-                    {
-                      {
-                        // @ts-ignore
-                        text: suggestion.text,
-                        none: "(no suggestion)",
-                        searchResults: "(search results)",
-                      }[suggestion.type]
-                    }
+                    {suggestionText}
                   </pre>
                 </>
               )}
@@ -438,9 +445,11 @@ export default function ResearchWriting() {
                 <div
                   key={result.url}
                   style={{ cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    finishSuggestionWithSearchResult(result.url);
+                  onMouseEnter={() => {
+                    setSuggestion({
+                      ...suggestion,
+                      previewResultURL: result.url,
+                    });
                   }}
                 >
                   <b>{result.title}</b>
