@@ -13,6 +13,7 @@ Creates a word processor which is augmented with AI problem-solving tools.
 */
 export default function ResearchWriting() {
   const [content, setContent] = useState("");
+  const previousSuggestionContextRef = useRef<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const createSuggestionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -24,14 +25,17 @@ export default function ResearchWriting() {
     if (!textareaRef.current) {
       return;
     }
-    setGenerationStatus("pending");
     const textarea = textareaRef.current;
     const selection = {
       selectionStart: textarea.selectionStart,
       selectionEnd: textarea.selectionEnd,
     };
     const before = textarea.value.slice(0, selection.selectionEnd);
-    // const after = textarea.value.slice(selection.selectionEnd);
+    // Ignore if the user just pressed backspace a few times.
+    if (previousSuggestionContextRef.current?.startsWith(before)) {
+      return;
+    }
+    setGenerationStatus("pending");
     try {
       const result = await api("generate_completion", { prompt: before });
       if (result.completion) {
@@ -40,7 +44,14 @@ export default function ResearchWriting() {
           position: selection.selectionEnd,
         });
         setGenerationStatus(null);
-      }
+        previousSuggestionContextRef.current = before;
+      } else {
+				setSuggestion({
+          text: "(no suggestion)",
+          position: selection.selectionEnd,
+        });
+				setGenerationStatus(null);
+			}
     } catch (e) {
       console.error(e);
       setGenerationStatus("errored");
@@ -107,14 +118,20 @@ export default function ResearchWriting() {
       <div style={{ display: "flex", height: "100%" }}>
         <div
           style={{
-            flex: 5,
+            flex: 4,
             display: "flex",
             flexDirection: "column",
             paddingRight: "2rem",
           }}
         >
-          <h3>Writing Panel</h3>
-          <span style={{ textTransform: "uppercase", fontSize: "0.75rem" }}>
+          <h3 style={{ margin: "0.5rem 0" }}>Writing Panel</h3>
+          <span
+            style={{
+              textTransform: "uppercase",
+              fontSize: "0.75rem",
+              margin: "0.5rem 0",
+            }}
+          >
             {generationStatus &&
               {
                 errored: "Error",

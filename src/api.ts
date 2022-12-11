@@ -1,5 +1,9 @@
-export async function getToken() {
-  return "$playground";
+export async function getToken(): Promise<string> {
+  if (window.location.pathname === "/researchwriting") {
+    return "$research-writing";
+  } else {
+    return "$playground";
+  }
 }
 
 export async function api(path: string, body: any) {
@@ -18,4 +22,3 @@ export async function api(path: string, body: any) {
   );
   return await result.json();
 }
-
