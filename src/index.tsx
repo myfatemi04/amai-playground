@@ -8,23 +8,58 @@ import reportWebVitals from "./reportWebVitals";
 import NotFound from "./NotFound";
 import Home from "./Home";
 import ResearchWriting from "./researchwriting/ResearchWriting";
+import UserProvider, { googleOauthUrl } from "./UserProvider";
+import GoogleCallback from "./GoogleCallback";
+import RequireAuth from "./RequireAuth";
+
+const Redirect = () => {
+  window.location.href = googleOauthUrl;
+
+  return (
+    <div
+      style={{
+        margin: "4rem",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <p>Redirecting...</p>
+      <p>
+        If you are not redirected, click <a href={googleOauthUrl}>here</a>.
+      </p>
+    </div>
+  );
+};
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <Router>
-      <Routes>
-        <Route path="/">
-          <Route path="generation" element={<Generation />} />
-          <Route path="research" element={<Research />} />
-          <Route path="researchwriting" element={<ResearchWriting />} />
-          <Route path="*" element={<NotFound />} />
-          <Route index element={<Home />} />
-        </Route>
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/">
+            <Route path="generation" element={<Generation />} />
+            <Route path="research" element={<Research />} />
+            <Route
+              path="researchwriting"
+              element={
+                <RequireAuth>
+                  <ResearchWriting />
+                </RequireAuth>
+              }
+            />
+            <Route path="google-auth" element={<Redirect />} />
+            <Route path="google-callback" element={<GoogleCallback />} />
+            <Route path="*" element={<NotFound />} />
+            <Route index element={<Home />} />
+          </Route>
+        </Routes>
+      </Router>
+    </UserProvider>
   </React.StrictMode>
 );
 
