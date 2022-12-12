@@ -9,7 +9,9 @@ import {
 } from "react";
 import { api } from "../api";
 import usePrevious from "../usePrevious";
+import { EventLoggingContext } from "./EventLogging";
 import { PageContentCacheContext } from "./PageContentCache";
+import { TextareaContext } from "./TextareaProvider";
 import useCursor from "./useCursor";
 import useScrollHeight from "./useScrollHeight";
 import useSuggestion from "./useSuggestion";
@@ -55,21 +57,15 @@ export default function RWTextArea({
     ...(style || {}),
   };
   const [dropping, setDropping] = useState(false);
-  const previousLength = usePrevious(content.length) ?? 0;
+  const { setContent: publishContent, setCursor: publishCursor } =
+    useContext(TextareaContext);
+  const { logEvent, logError } = useContext(EventLoggingContext);
 
-  useEffect(() => {
-    if (content.length > previousLength + 5) {
-      console.log("Content got a lot longer", { previousLength, content });
-      console.log("Moving cursor to end");
-      ref.current!.focus();
-      ref.current!.setSelectionRange(content.length, content.length);
-    }
-    console.log("Content length:", content.length);
-  }, [previousLength, content]);
+  // Publish cursor and content to the context
+  useEffect(() => publishContent(content), [content, publishContent]);
+  useEffect(() => publishCursor(cursor), [cursor, publishCursor]);
 
-  useEffect(() => {
-    setDropping(false);
-  }, [draggedUrl]);
+  useEffect(() => setDropping(false), [draggedUrl]);
 
   useEffect(() => {
     if (draggedUrl !== null) {
@@ -79,7 +75,6 @@ export default function RWTextArea({
 
   const onDrop: MouseEventHandler = useCallback(
     (e) => {
-      console.log("Dropped", draggedUrl);
       e.preventDefault();
       async function run() {
         if (draggedUrl === null) {
@@ -102,17 +97,29 @@ export default function RWTextArea({
             content.slice(0, cursor + 1) +
             continuation +
             content.slice(cursor + 1);
+          logEvent({
+            type: "drag",
+            url: draggedUrl,
+            title: draggedUrlContent.title,
+            snippet: draggedUrlContent.textContent,
+            content,
+            cursor,
+          });
           setContent(text);
-          ref.current!.setSelectionRange(text.length, text.length);
+          ref.current!.focus();
+          ref.current!.setSelectionRange(
+            cursor + continuation.length,
+            cursor + continuation.length
+          );
         } catch (e) {
-          console.error(e);
+          logError(e);
         }
         setDropping(false);
       }
 
       run();
     },
-    [content, cursor, draggedUrl, request]
+    [draggedUrl, request, content, cursor, logEvent, logError]
   );
 
   const scrollbarWidth = ref.current

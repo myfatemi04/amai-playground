@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "../api";
 import Header from "../Header";
+import EventLoggingProvider from "./EventLogging";
 import PageContentCacheProvider from "./PageContentCache";
-import RWResearchPanel from "./RWResearchPanel";
-import RWTextArea from "./RWTextArea";
+import RWResearchPanel from "./ResearchPanel";
+import RWTextArea from "./ResearchTextarea";
 
 export async function getCompletionBasedOnSearchResult(
   knowledge: string,
@@ -30,98 +31,75 @@ export async function getSearchQueries(question: string): Promise<string[]> {
   });
 }
 
-type RWEvent =
-  | {
-      type: "search";
-      query: string;
-      content: string;
-      cursor: number;
-    }
-  | {
-      type: "completion";
-      content: string;
-      cursor: number;
-    }
-  | {
-      type: "drag";
-      content: string;
-      url: string;
-      title: string;
-      snippet: string;
-    };
-
 /*
 Creates a word processor which is augmented with AI problem-solving tools.
 */
 export default function ResearchWriting() {
   const [draggedUrl, setDraggedUrl] = useState<string | null>(null);
-  const [history, setHistory] = useState<RWEvent[]>([]);
-  const logEvent = useCallback((event: RWEvent) => {
-    setHistory((history) => [...history, event]);
-  }, []);
-
-  useEffect(() => {
-    console.log({ draggedUrl });
-  }, [draggedUrl]);
 
   return (
-    <PageContentCacheProvider>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          padding: "2rem",
-          height: "100vh",
-          width: "calc(min(100vw, max(80vw, 40rem)))",
-          boxSizing: "border-box",
-          margin: "0 auto",
-        }}
-      >
-        <Header>AugmateAI Research Writing</Header>
-        {/*
-				minHeight: 0 might not seem to make sense here, but by default, it's minHeight: auto. This causes overflows of the flex box.
-				More info can be found here: https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container
+    <EventLoggingProvider>
+      <PageContentCacheProvider>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            padding: "2rem",
+            height: "100vh",
+            width: "calc(min(100vw, max(80vw, 40rem)))",
+            boxSizing: "border-box",
+            margin: "0 auto",
+          }}
+        >
+          <Header>AugmateAI Research Writing</Header>
+          {/*
+            minHeight: 0 might not seem to make sense here, but by default, it's minHeight: auto. This causes overflows of the flex box.
+            More info can be found here: https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container
 
-				flex-grow ensures that the element stretches to the full width (or height) of the enclosing flexbox.
-			*/}
-        <div style={{ display: "flex", minHeight: 0, flexGrow: 1 }}>
-          <div
-            style={{
-              flex: 4,
-              display: "flex",
-              flexDirection: "column",
-              paddingRight: "2rem",
-            }}
-          >
-            <h3 style={{ margin: "0.5rem 0" }}>Writing Panel</h3>
-            <span style={{ fontSize: "0.875rem" }}>
-              Powered by large language models. See the homepage:{" "}
-              <a href="https://augmateai.michaelfatemi.com/">AugmateAI</a>
-              <br />
-              Developed by Michael Fatemi <br />
-              <br />
-              <b>Usage</b>
-              <ul style={{ marginTop: 0 }}>
-                <li>
-                  Start typing anything, and suggestions will appear. Press{" "}
-                  <code>tab</code> or <code>right arrow</code> to complete them.
-                </li>
-                <li>
-                  You can incorporate information from outside sources now!
-                  Search something on the side and drag and drop it into the textbox
-                  to create a completion using the source.
-                </li>
-              </ul>
-            </span>
-            <div style={{ position: "relative", height: "100%", flexGrow: 1 }}>
-              <RWTextArea draggedUrl={draggedUrl} />
+            flex-grow ensures that the element stretches to the full width (or height) of the enclosing flexbox.
+          */}
+          <div style={{ display: "flex", minHeight: 0, flexGrow: 1 }}>
+            <div
+              style={{
+                flex: 4,
+                display: "flex",
+                flexDirection: "column",
+                paddingRight: "2rem",
+              }}
+            >
+              <h3 style={{ margin: "0.5rem 0" }}>Writing Panel</h3>
+              <span style={{ fontSize: "0.875rem" }}>
+                Powered by large language models. See the homepage:{" "}
+                <a href="https://augmateai.michaelfatemi.com/">AugmateAI</a>
+                <br />
+                Developed by Michael Fatemi <br />
+                <br />
+                <b>Usage</b>
+                <ul style={{ marginTop: 0 }}>
+                  <li>
+                    Start typing anything, and suggestions will appear. Press{" "}
+                    <code>tab</code> or <code>right arrow</code> to complete
+                    them.
+                  </li>
+                  <li>
+                    You can incorporate information from outside sources now!
+                    Search something on the side and drag and drop it into the
+                    textbox to create a completion using the source.
+                  </li>
+                </ul>
+              </span>
+              <div
+                style={{ position: "relative", height: "100%", flexGrow: 1 }}
+              >
+                <RWTextArea draggedUrl={draggedUrl} />
+              </div>
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <RWResearchPanel setDraggedUrl={setDraggedUrl} />
             </div>
           </div>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <RWResearchPanel setDraggedUrl={setDraggedUrl} />
-          </div>
         </div>
-      </div>
-    </PageContentCacheProvider>
+      </PageContentCacheProvider>
+    </EventLoggingProvider>
   );
 }

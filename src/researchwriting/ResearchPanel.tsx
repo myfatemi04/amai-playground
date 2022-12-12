@@ -1,5 +1,13 @@
-import { useEffect, useState } from "react";
+import {
+  MouseEventHandler,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { api } from "../api";
+import { EventLoggingContext } from "./EventLogging";
+import { TextareaContext } from "./TextareaProvider";
 
 export interface SearchResultPage {
   title: string;
@@ -28,37 +36,49 @@ export default function RWResearchPanel({
 }: {
   setDraggedUrl: (url: string | null) => void;
 }) {
-  const [searchText, setSearchText] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResults>();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResults>();
   const [status, setStatus] = useState<"idle" | "pending" | "errored">("idle");
+  const { logEvent, logError } = useContext(EventLoggingContext);
+  const { content } = useContext(TextareaContext);
 
   useEffect(() => {
-    if (!searchText.trim()) {
+    if (!query.trim()) {
       return;
     }
     const timeout = setTimeout(async () => {
       setStatus("pending");
       try {
-        const results = await getSearchResults(searchText);
-        setSearchResults(results);
+        logEvent({
+          type: "search",
+          query,
+          content,
+        });
+        const results = await getSearchResults(query);
+        setResults(results);
         setStatus("idle");
       } catch (e) {
-        console.error(e);
+        logError(e);
         setStatus("errored");
       }
     }, SEARCH_TIMEOUT_MS);
     return () => {
       clearTimeout(timeout);
     };
-  }, [searchText]);
+  }, [logEvent, query, content, logError]);
+
+  const onDragEnd: MouseEventHandler = useCallback(
+    (e) => e.preventDefault(),
+    []
+  );
 
   return (
     <>
       <h3 style={{ margin: "0.5rem 0" }}>Research Panel</h3>
       <input
         type="text"
-        onChange={(e) => setSearchText(e.target.value)}
-        value={searchText}
+        onChange={(e) => setQuery(e.target.value)}
+        value={query}
       />
       <div
         style={{
@@ -72,12 +92,12 @@ export default function RWResearchPanel({
           userSelect: "none",
         }}
       >
-        {searchResults?.pages.map((result) => (
+        {results?.pages.map((result) => (
           <div
             key={result.url}
             style={{ cursor: "pointer" }}
             onDragStart={() => setDraggedUrl(result.url)}
-            onDragEnd={(e) => e.preventDefault()}
+            onDragEnd={onDragEnd}
             draggable
           >
             <a

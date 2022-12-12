@@ -73,7 +73,6 @@ function Research() {
       setResponse(await conductSearch(question));
       setStatus("idle");
     } catch (e) {
-      console.error(e);
       setStatus("errored");
     }
   }, [question]);
