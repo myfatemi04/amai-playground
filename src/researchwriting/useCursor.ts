@@ -11,11 +11,13 @@ export default function useCursor(textbox: HTMLTextAreaElement | null) {
       setCursor(textbox.selectionEnd);
     };
     textbox.addEventListener("keydown", updateCursor);
+    textbox.addEventListener("keyup", updateCursor);
     textbox.addEventListener("mousedown", updateCursor);
     textbox.addEventListener("mouseup", updateCursor);
     textbox.addEventListener("focus", updateCursor);
     return () => {
       textbox.removeEventListener("keydown", updateCursor);
+      textbox.removeEventListener("keyup", updateCursor);
       textbox.removeEventListener("mousedown", updateCursor);
       textbox.removeEventListener("mouseup", updateCursor);
       textbox.removeEventListener("focus", updateCursor);
