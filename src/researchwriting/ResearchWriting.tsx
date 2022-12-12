@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../api";
 import Header from "../Header";
 import PageContentCacheProvider from "./PageContentCache";
@@ -30,11 +30,35 @@ export async function getSearchQueries(question: string): Promise<string[]> {
   });
 }
 
+type RWEvent =
+  | {
+      type: "search";
+      query: string;
+      content: string;
+      cursor: number;
+    }
+  | {
+      type: "completion";
+      content: string;
+      cursor: number;
+    }
+  | {
+      type: "drag";
+      content: string;
+      url: string;
+      title: string;
+      snippet: string;
+    };
+
 /*
 Creates a word processor which is augmented with AI problem-solving tools.
 */
 export default function ResearchWriting() {
   const [draggedUrl, setDraggedUrl] = useState<string | null>(null);
+  const [history, setHistory] = useState<RWEvent[]>([]);
+  const logEvent = useCallback((event: RWEvent) => {
+    setHistory((history) => [...history, event]);
+  }, []);
 
   useEffect(() => {
     console.log({ draggedUrl });

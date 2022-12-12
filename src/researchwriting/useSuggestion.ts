@@ -7,12 +7,12 @@ export default function useSuggestion(text: string) {
   const timerRef = useRef<NodeJS.Timeout>();
   const [suggestion, setSuggestion] = useState<{
     text: string;
-    completion: string;
-  } | null>(null);
+    completion: string | null;
+  }>({ text, completion: null });
   const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
 
   useEffect(() => {
-		setSuggestion(null);
+    setSuggestion({ text, completion: null });
     if (text.length === 0) {
       return;
     }
@@ -23,7 +23,7 @@ export default function useSuggestion(text: string) {
           prompt: text,
         });
         setSuggestion((suggestion) =>
-          suggestion === null ? { text, completion } : suggestion
+          suggestion.text === text ? { text, completion } : suggestion
         );
         setStatus("idle");
       } catch (error) {

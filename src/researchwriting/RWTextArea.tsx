@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { api } from "../api";
+import usePrevious from "../usePrevious";
 import { PageContentCacheContext } from "./PageContentCache";
 import useCursor from "./useCursor";
 import useSuggestion from "./useSuggestion";
@@ -50,6 +51,15 @@ export default function RWTextArea({
     ...(style || {}),
   };
   const [dropping, setDropping] = useState(false);
+  const previousLength = usePrevious(content.length) ?? 0;
+
+  useEffect(() => {
+    if (content.length > previousLength + 5) {
+      console.log("Content got a lot longer", { previousLength, content });
+      console.log("Moving cursor to end");
+      ref.current!.setSelectionRange(content.length, content.length);
+    }
+  }, [previousLength, content]);
 
   useEffect(() => {
     setDropping(false);
@@ -82,11 +92,12 @@ export default function RWTextArea({
             draggedUrlContent.textContent,
             content.slice(0, cursor + 1)
           );
-          setContent(
+          const text =
             content.slice(0, cursor + 1) +
-              continuation +
-              content.slice(cursor + 1)
-          );
+            continuation +
+            content.slice(cursor + 1);
+          setContent(text);
+          ref.current!.setSelectionRange(text.length, text.length);
         } catch (e) {
           console.error(e);
         }
