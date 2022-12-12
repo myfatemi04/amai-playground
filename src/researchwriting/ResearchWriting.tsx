@@ -7,8 +7,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { api } from "./api";
-import Header from "./Header";
+import { api } from "../api";
+import Header from "../Header";
 
 interface SearchResultsSuggestionCache {
   [url: string]:
