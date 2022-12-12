@@ -16,11 +16,11 @@ export default function GoogleCallback() {
     })
       .then((response) => {
         if (response.access_token) {
+          // Redirect.
+          window.location.href = "/";
+          setStatus("authenticated");
           localStorage.setItem("accessToken", response.access_token);
         }
-        // Redirect.
-        window.location.href = "/";
-        setStatus("authenticated");
       })
       .catch((error) => {
         console.error(error);
