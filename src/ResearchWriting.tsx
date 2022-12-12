@@ -7,7 +7,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { api } from "../api";
+import { api } from "./api";
+import Header from "./Header";
 
 interface SearchResultsSuggestionCache {
   [url: string]:
@@ -20,7 +21,9 @@ interface SearchResultsSuggestionCache {
         parseable: false;
         pageContent: null;
         completion: null;
-      };
+      }
+    // `null` means that it's pending
+    | null;
 }
 
 type Suggestion =
@@ -36,6 +39,7 @@ type Suggestion =
       position: number;
       question: string;
       previewResultURL: string | null;
+      ts: number;
     }
   | {
       type: "none";
@@ -164,6 +168,7 @@ export default function ResearchWriting() {
           cache: {},
           question,
           previewResultURL: null,
+          ts: new Date().getTime(),
         });
         setGenerationStatus(null);
         return;
@@ -191,6 +196,7 @@ export default function ResearchWriting() {
     }
   }, []);
 
+  // Caching searchResults completions
   useEffect(() => {
     if (suggestion?.type !== "searchResults") {
       return;
@@ -213,7 +219,11 @@ export default function ResearchWriting() {
         console.error("Page not found in search results");
         return;
       }
-      if (!(url in suggestion.cache)) {
+      if (suggestion.cache[url] === undefined) {
+        setSuggestion({
+          ...suggestion,
+          cache: { ...suggestion.cache, [url]: null },
+        });
         let pageContent: string | null;
         try {
           pageContent = parse(await getPageHtml(url))?.textContent ?? null;
@@ -239,22 +249,39 @@ export default function ResearchWriting() {
             0,
             contextWithQuestion.lastIndexOf("(")
           );
-          cacheContent = {
-            parseable: true,
-            pageContent,
-            completion: await getCompletionBasedOnSearchResult(
-              knowledge,
-              contextWithoutQuestion
-            ),
-          };
+          try {
+            cacheContent = {
+              parseable: true,
+              pageContent,
+              completion: await getCompletionBasedOnSearchResult(
+                knowledge,
+                contextWithoutQuestion
+              ),
+            };
+          } catch (e) {
+            console.error(e);
+            cacheContent = {
+              parseable: false,
+              pageContent: null,
+              completion: null,
+            };
+          }
         }
-        setSuggestion({
-          ...suggestion,
-          cache: {
-            ...suggestion.cache,
-            [url]: cacheContent,
-          },
-        });
+        // Prevent updating the wrong suggestion
+        const ts = suggestion.ts;
+        setSuggestion((suggestion) =>
+          // @ts-ignore
+          suggestion?.ts === ts
+            ? {
+                ...suggestion,
+                cache: {
+                  // @ts-ignore
+                  ...suggestion.cache,
+                  [url]: cacheContent,
+                },
+              }
+            : suggestion
+        );
       }
     }
     run();
@@ -278,15 +305,17 @@ export default function ResearchWriting() {
       return "(hover over a search result)";
     }
 
-    if (!suggestion.cache[suggestion.previewResultURL]) {
+    const cached = suggestion.cache[suggestion.previewResultURL];
+
+    if (cached == null) {
       return `(loading from URL ${suggestion.previewResultURL})`;
     }
 
-    if (!suggestion.cache[suggestion.previewResultURL].parseable) {
+    if (!cached.parseable) {
       return `(unable to load data from URL ${suggestion.previewResultURL})`;
     }
 
-    return suggestion.cache[suggestion.previewResultURL].completion;
+    return cached.completion;
   }, [suggestion]);
 
   const onTextareaChange = useCallback(
@@ -313,18 +342,24 @@ export default function ResearchWriting() {
         createSuggestion();
       } else if ((e.code === "Tab" || e.code === "ArrowRight") && suggestion) {
         e.preventDefault();
-				if (suggestion.type === 'searchResults') {
-					const beforeIncludingQuestion = textarea.value.slice(0, suggestion.position);
-					const beforeWithoutQuestion = beforeIncludingQuestion.slice(0, beforeIncludingQuestion.lastIndexOf('('));
-					const after = textarea.value.slice(suggestion.position);
-					const text = beforeWithoutQuestion + suggestionText + after;
-					setContent(text);
-				} else {
-					const before = textarea.value.slice(0, suggestion.position);
-					const after = textarea.value.slice(suggestion.position);
-					const text = before + suggestionText + after;
-					setContent(text);
-				}
+        if (suggestion.type === "searchResults") {
+          const beforeIncludingQuestion = textarea.value.slice(
+            0,
+            suggestion.position
+          );
+          const beforeWithoutQuestion = beforeIncludingQuestion.slice(
+            0,
+            beforeIncludingQuestion.lastIndexOf("(")
+          );
+          const after = textarea.value.slice(suggestion.position);
+          const text = beforeWithoutQuestion + suggestionText + after;
+          setContent(text);
+        } else {
+          const before = textarea.value.slice(0, suggestion.position);
+          const after = textarea.value.slice(suggestion.position);
+          const text = before + suggestionText + after;
+          setContent(text);
+        }
         setSuggestion(null);
       } else {
         setSuggestion(null);
@@ -349,14 +384,17 @@ export default function ResearchWriting() {
         flexDirection: "column",
         padding: "2rem",
         height: "100vh",
-        width: "100vw",
+        width: "calc(min(100vw, max(80vw, 40rem)))",
         boxSizing: "border-box",
+        margin: "0 auto",
       }}
     >
-      <h1>Research Writing Assistant</h1>
+      <Header>AugmateAI Research Writing</Header>
       {/*
 				minHeight: 0 might not seem to make sense here, but by default, it's minHeight: auto. This causes overflows of the flex box.
 				More info can be found here: https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container
+
+				flex-grow ensures that the element stretches to the full width (or height) of the enclosing flexbox.
 			*/}
       <div style={{ display: "flex", minHeight: 0, flexGrow: 1 }}>
         <div
@@ -368,6 +406,28 @@ export default function ResearchWriting() {
           }}
         >
           <h3 style={{ margin: "0.5rem 0" }}>Writing Panel</h3>
+          <span style={{ fontSize: "0.875rem" }}>
+            Powered by large language models. See the homepage:{" "}
+            <a href="https://augmateai.michaelfatemi.com/">AugmateAI</a>
+            <br />
+            Developed by Michael Fatemi <br />
+            <br />
+            <b>Usage</b>
+            <ul style={{ margin: 0 }}>
+              <li>
+                Start typing anything, and suggestions will appear. Press{" "}
+                <code>tab</code> or <code>right arrow</code> to complete them.
+              </li>
+              <li>
+                You can incorporate information from outside sources now!
+                Whenever you want to fill in information from another website,
+                type <code>({"{your question}"}?)</code>, wait a moment, and
+                hover over a search result to preview what the completion will
+                look like. You can click the result or press <code>tab</code> or{" "}
+                <code>right arrow</code> to accept it.
+              </li>
+            </ul>
+          </span>
           <span
             style={{
               textTransform: "uppercase",
@@ -459,6 +519,25 @@ export default function ResearchWriting() {
                       previewResultURL: result.url,
                     });
                   }}
+                  onClick={() => {
+                    const textarea = textareaRef.current;
+                    if (!textarea) {
+                      return;
+                    }
+                    const beforeIncludingQuestion = textarea.value.slice(
+                      0,
+                      suggestion.position
+                    );
+                    const before = beforeIncludingQuestion.slice(
+                      0,
+                      beforeIncludingQuestion.lastIndexOf("(")
+                    );
+                    const after = textarea.value.slice(suggestion.position);
+                    const text = before + suggestionText + after;
+                    setContent(text);
+                    setSuggestion(null);
+                  }}
+                  draggable
                 >
                   <b>{result.title}</b>
                   <p>{result.snippet}</p>
