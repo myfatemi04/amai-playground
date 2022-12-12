@@ -108,11 +108,8 @@ export default function ResearchWriting() {
                 </li>
                 <li>
                   You can incorporate information from outside sources now!
-                  Whenever you want to fill in information from another website,
-                  type <code>({"{your question}"}?)</code>, wait a moment, and
-                  hover over a search result to preview what the completion will
-                  look like. You can click the result or press <code>tab</code>{" "}
-                  or <code>right arrow</code> to accept it.
+                  Search something on the side and drag and drop it into the textbox
+                  to create a completion using the source.
                 </li>
               </ul>
             </span>

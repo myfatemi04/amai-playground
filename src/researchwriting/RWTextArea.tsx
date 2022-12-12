@@ -11,6 +11,7 @@ import { api } from "../api";
 import usePrevious from "../usePrevious";
 import { PageContentCacheContext } from "./PageContentCache";
 import useCursor from "./useCursor";
+import useScrollHeight from "./useScrollHeight";
 import useSuggestion from "./useSuggestion";
 
 async function continueWithRetrievedPage(
@@ -45,7 +46,10 @@ export default function RWTextArea({
     fontFamily: "sans-serif",
     fontSize: "1rem",
     padding: "1rem",
-    inset: 0,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     position: "absolute",
     border: "1px solid black",
     ...(style || {}),
@@ -57,8 +61,10 @@ export default function RWTextArea({
     if (content.length > previousLength + 5) {
       console.log("Content got a lot longer", { previousLength, content });
       console.log("Moving cursor to end");
+      ref.current!.focus();
       ref.current!.setSelectionRange(content.length, content.length);
     }
+    console.log("Content length:", content.length);
   }, [previousLength, content]);
 
   useEffect(() => {
@@ -109,6 +115,12 @@ export default function RWTextArea({
     [content, cursor, draggedUrl, request]
   );
 
+  const scrollbarWidth = ref.current
+    ? ref.current.offsetWidth - ref.current.clientWidth
+    : 0;
+
+  const scrollHeight = useScrollHeight(ref.current);
+
   return (
     <>
       <div
@@ -117,6 +129,9 @@ export default function RWTextArea({
           borderColor: "transparent",
           zIndex: 1,
           pointerEvents: "none",
+          right: scrollbarWidth,
+          top: -scrollHeight,
+          overflow: "hidden",
         }}
       >
         {suggestion && !dropping && (
@@ -142,7 +157,7 @@ export default function RWTextArea({
                 whiteSpace: "pre-wrap",
               }}
             >
-              {suggestion}
+              {suggestion || (suggestion !== null && "(no suggestion)")}
             </pre>
           </>
         )}

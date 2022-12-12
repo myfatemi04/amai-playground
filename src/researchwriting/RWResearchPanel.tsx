@@ -80,7 +80,14 @@ export default function RWResearchPanel({
             onDragEnd={(e) => e.preventDefault()}
             draggable
           >
-            <b>{result.title}</b>
+            <a
+              href={result.url}
+              target="_blank"
+              rel="noreferrer"
+              style={{ fontWeight: "bold" }}
+            >
+              {result.title}
+            </a>
             <p>{result.snippet}</p>
           </div>
         ))}
