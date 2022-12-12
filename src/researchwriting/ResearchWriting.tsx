@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../api";
 import Header from "../Header";
+import ProfilePane from "../ProfilePane";
 import EventLoggingProvider from "./EventLogging";
 import PageContentCacheProvider from "./PageContentCache";
 import RWResearchPanel from "./ResearchPanel";
@@ -52,10 +53,11 @@ export default function ResearchWriting() {
           }}
         >
           <Header>AugmateAI Research Writing</Header>
+          <ProfilePane />
           {/*
             minHeight: 0 might not seem to make sense here, but by default, it's minHeight: auto. This causes overflows of the flex box.
             More info can be found here: https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container
-
+            
             flex-grow ensures that the element stretches to the full width (or height) of the enclosing flexbox.
           */}
           <div style={{ display: "flex", minHeight: 0, flexGrow: 1 }}>
