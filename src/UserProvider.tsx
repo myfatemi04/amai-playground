@@ -1,4 +1,4 @@
-import { Context, createContext, ReactNode, useEffect, useState } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
 import { api } from "./api";
 import useLocalStorage from "./useLocalStorage";
 
@@ -40,9 +40,7 @@ export default function UserProvider({ children }: { children: ReactNode }) {
     }
     setUser(null);
     setPending(true);
-    api("my_info", {
-      access_token: accessToken,
-    })
+    api("my_info")
       .then(setUser)
       .catch(console.error)
       .finally(() => setPending(false));

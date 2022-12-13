@@ -6,13 +6,14 @@ export async function getToken(): Promise<string> {
   }
 }
 
-export async function api(path: string, body: any) {
+export async function api(path: string, body: any = {}) {
   const result = await fetch(
     `https://7azz4l2unk.execute-api.us-east-1.amazonaws.com/${path}`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("accessToken"),
       },
       body: JSON.stringify({
         ...body,
