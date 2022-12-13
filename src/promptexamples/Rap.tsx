@@ -151,6 +151,7 @@ export default function Rap() {
       }}
     >
       <Header>Generate a Hip-Hop Rap</Header>
+      <img src="/rap-logo.png" alt="Rap logo" style={{ width: "10rem" }} />
       <p>Write a hip-hop rap about...</p>
       <input type="text" onChange={onChange} value={topic} />
       {verses !== null ? (
@@ -204,7 +205,7 @@ export default function Rap() {
       ) : topic ? (
         <p>Generating...</p>
       ) : (
-        <p>Type a topic above and the rap will show up here.</p>
+        <p>You can listen to it after it's generated 🎧</p>
       )}
     </div>
   );
