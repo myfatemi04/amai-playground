@@ -10,7 +10,7 @@ function Header({ children }: { children: ReactNode }) {
       }}
     >
       <img
-        src="logo192.png"
+        src="/logo192.png"
         alt="AugmateAI Logo"
         style={{ width: "3rem", height: "3rem" }}
       />

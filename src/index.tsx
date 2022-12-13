@@ -11,6 +11,7 @@ import ResearchWriting from "./researchwriting/ResearchWriting";
 import UserProvider, { googleOauthUrl } from "./UserProvider";
 import GoogleCallback from "./GoogleCallback";
 import RequireAuth from "./RequireAuth";
+import Rap from "./promptexamples/Rap";
 
 const Redirect = () => {
   window.location.href = googleOauthUrl;
@@ -37,11 +38,21 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <UserProvider>
       <Router>
         <Routes>
           <Route path="/">
+            <Route path="prompt-examples">
+              <Route
+                path="rap"
+                element={
+                  <RequireAuth>
+                    <Rap />
+                  </RequireAuth>
+                }
+              />
+            </Route>
             <Route path="generation" element={<Generation />} />
             <Route path="research" element={<Research />} />
             <Route
@@ -60,7 +71,7 @@ root.render(
         </Routes>
       </Router>
     </UserProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

@@ -42,7 +42,11 @@ export default function UserProvider({ children }: { children: ReactNode }) {
     setPending(true);
     api("my_info")
       .then(setUser)
-      .catch(console.error)
+      .catch((e) => {
+        setUser(null);
+        setPending(false);
+        console.error(e);
+      })
       .finally(() => setPending(false));
   }, [accessToken]);
 
