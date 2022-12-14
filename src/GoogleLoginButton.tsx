@@ -1,6 +1,8 @@
 import { googleOauthUrl } from "./UserProvider";
 
 function login() {
+  const url = window.location.href;
+  localStorage.setItem("redirect_url", url);
   window.location.href = googleOauthUrl;
 }
 

@@ -41,7 +41,14 @@ export default function UserProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setPending(true);
     api("my_info")
-      .then(setUser)
+      .then((user) => {
+        if (localStorage.getItem("redirect_url")) {
+          const url = localStorage.getItem("redirect_url")!;
+          localStorage.removeItem("redirect_url");
+          window.location.href = url;
+        }
+        setUser(user);
+      })
       .catch((e) => {
         setUser(null);
         setPending(false);
