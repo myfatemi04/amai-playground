@@ -1,7 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { api } from "../api";
 import Header from "../Header";
 import Positioning from "../Positioning";
-import PromptSelector from "./PromptSelector";
+import usePrevious from "../usePrevious";
+import PromptSelector, { Prompt } from "./PromptSelector";
 import PromptUsage from "./PromptUsage";
 
 export type PromptVariable = {
@@ -14,6 +16,8 @@ export default function PromptDesigner({
 }: {
   promptId: string | null;
 }) {
+  const [name, setName] = useState("");
+  const previousName = usePrevious(name);
   const [variables, setVariables] = useState<PromptVariable[]>([]);
   const [template, setTemplate] = useState("");
   const addVariable = useCallback(() => {
@@ -39,6 +43,33 @@ export default function PromptDesigner({
     });
   }, []);
 
+  useEffect(() => {
+    api("get_prompts").then((prompts: Prompt[]) => {
+      const found = prompts.find((prompt) => prompt._id === promptId);
+      if (found) {
+        setName(found.name);
+        setVariables(found.variables);
+        setTemplate(found.template);
+      }
+    });
+  }, [promptId]);
+
+  useEffect(() => {
+    if (previousName && name && name !== previousName) {
+      const timeout = setTimeout(() => {
+        api("update_prompt", { prompt_id: promptId, new_name: name })
+          .then(() => {
+            console.log("Saved");
+          })
+          .catch(console.error);
+      }, 1000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [name, previousName, promptId]);
+
   if (promptId === null) {
     return (
       <Positioning>
@@ -51,16 +82,35 @@ export default function PromptDesigner({
   return (
     <Positioning>
       <Header>Prompt Designer</Header>
-      <PromptUsage variables={variables} promptId={promptId} />
+      <div
+        style={{ display: "flex", flexDirection: "column", padding: "0.5rem" }}
+      >
+        <a href="/prompt-designer">Back</a>
+        <span>Name</span>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <PromptUsage variables={variables} promptId={promptId} />
+      </div>
       <div style={{ display: "flex", flexGrow: 1 }}>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, padding: "0.5rem" }}>
           <h3 style={{ margin: 0 }}>Prompt Variables</h3>
           <button onClick={addVariable} style={{ margin: "0.5rem 0" }}>
             Add variable
           </button>
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             {variables.map((variable, index) => (
-              <div style={{ display: "flex", marginBottom: "0.5rem" }}>
+              <div
+                style={{ display: "flex", marginBottom: "0.5rem" }}
+                key={variable.name}
+              >
                 <input
                   type="text"
                   placeholder="New variable..."
@@ -73,9 +123,22 @@ export default function PromptDesigner({
                     ]);
                   }}
                 />
-                <select style={{ marginLeft: "0.5rem" }}>
-                  <option value="float">Number</option>
+                <select
+                  style={{ marginLeft: "0.5rem" }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value !== "float" && value !== "string") {
+                      return;
+                    }
+                    setVariables((variables) => [
+                      ...variables.slice(0, index),
+                      { ...variables[index], type: value },
+                      ...variables.slice(index + 1),
+                    ]);
+                  }}
+                >
                   <option value="string">String</option>
+                  <option value="float">Number</option>
                 </select>
                 <button
                   onClick={() => {
@@ -92,8 +155,15 @@ export default function PromptDesigner({
             ))}
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", flex: 3 }}>
-          <h3 style={{ margin: 0 }}>Prompt</h3>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 3,
+            padding: "0.5rem",
+          }}
+        >
+          <h3 style={{ margin: 0 }}>Template</h3>
           <textarea
             style={{
               padding: "0.5rem",

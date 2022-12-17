@@ -25,7 +25,7 @@ ${FOUR_SPACES}${variables
           .map(
             (variable) =>
               `"${variable.name}": ${
-                variable.type === "string" ? '"Test string"' : 1
+                variable.type === "float" ? "12.34" : '"Test string"'
               }`
           )
           .join(",\n" + FOUR_SPACES)}
