@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../api";
 import Header from "../Header";
+import Positioning from "../Positioning";
 import ProfilePane from "../ProfilePane";
 import EventLoggingProvider from "./EventLogging";
 import PageContentCacheProvider from "./PageContentCache";
@@ -41,17 +42,7 @@ export default function ResearchWriting() {
   return (
     <EventLoggingProvider>
       <PageContentCacheProvider>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            padding: "2rem",
-            height: "100vh",
-            width: "calc(min(100vw, max(80vw, 40rem)))",
-            boxSizing: "border-box",
-            margin: "0 auto",
-          }}
-        >
+        <Positioning>
           <Header>AugmateAI Research Writing</Header>
           <ProfilePane />
           {/*
@@ -100,7 +91,7 @@ export default function ResearchWriting() {
               <RWResearchPanel setDraggedUrl={setDraggedUrl} />
             </div>
           </div>
-        </div>
+        </Positioning>
       </PageContentCacheProvider>
     </EventLoggingProvider>
   );

@@ -12,6 +12,7 @@ import UserProvider, { googleOauthUrl } from "./UserProvider";
 import GoogleCallback from "./GoogleCallback";
 import RequireAuth from "./RequireAuth";
 import Rap from "./promptexamples/Rap";
+import PromptDesigner from "./promptdesigner/PromptDesigner";
 
 const Redirect = () => {
   window.location.href = googleOauthUrl;
@@ -39,38 +40,39 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   // <React.StrictMode>
-    <UserProvider>
-      <Router>
-        <Routes>
-          <Route path="/">
-            <Route path="prompt-examples">
-              <Route
-                path="rap"
-                element={
-                  <RequireAuth>
-                    <Rap />
-                  </RequireAuth>
-                }
-              />
-            </Route>
-            <Route path="generation" element={<Generation />} />
-            <Route path="research" element={<Research />} />
+  <UserProvider>
+    <Router>
+      <Routes>
+        <Route path="/">
+          <Route path="prompt-designer" element={<PromptDesigner promptId={new URL(window.location.href).searchParams.get("promptId")} />} />
+          <Route path="prompt-examples">
             <Route
-              path="researchwriting"
+              path="rap"
               element={
                 <RequireAuth>
-                  <ResearchWriting />
+                  <Rap />
                 </RequireAuth>
               }
             />
-            <Route path="google-auth" element={<Redirect />} />
-            <Route path="google-callback" element={<GoogleCallback />} />
-            <Route path="*" element={<NotFound />} />
-            <Route index element={<Home />} />
           </Route>
-        </Routes>
-      </Router>
-    </UserProvider>
+          <Route path="generation" element={<Generation />} />
+          <Route path="research" element={<Research />} />
+          <Route
+            path="researchwriting"
+            element={
+              <RequireAuth>
+                <ResearchWriting />
+              </RequireAuth>
+            }
+          />
+          <Route path="google-auth" element={<Redirect />} />
+          <Route path="google-callback" element={<GoogleCallback />} />
+          <Route path="*" element={<NotFound />} />
+          <Route index element={<Home />} />
+        </Route>
+      </Routes>
+    </Router>
+  </UserProvider>
   // </React.StrictMode>
 );
 
