@@ -5,21 +5,9 @@ import {
   useEffect,
   useState,
 } from "react";
-import { api } from "../api";
+import { api, SearchResults } from "../api";
 import { EventLoggingContext } from "./EventLogging";
 import { TextareaContext } from "./TextareaProvider";
-
-export interface SearchResultPage {
-  title: string;
-  url: string;
-  snippet: string;
-}
-
-export interface SearchResults {
-  pages: SearchResultPage[];
-  related_searches: string[];
-  query: string;
-}
 
 async function getSearchResults(query: string): Promise<SearchResults> {
   const { result } = await api("retrieval_enhancement", {

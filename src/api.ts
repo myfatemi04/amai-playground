@@ -6,6 +6,14 @@ export async function getToken(): Promise<string> {
   }
 }
 
+export async function getSearchResults(query: string): Promise<SearchResults> {
+  const { result } = await api("retrieval_enhancement", {
+    backend: "bing",
+    query,
+  });
+  return { ...result, query };
+}
+
 export async function api(path: string, body: any = {}) {
   const result = await fetch(
     `https://7azz4l2unk.execute-api.us-east-1.amazonaws.com/${path}`,
@@ -22,4 +30,16 @@ export async function api(path: string, body: any = {}) {
     }
   );
   return await result.json();
+}
+
+export interface SearchResultPage {
+  title: string;
+  url: string;
+  snippet: string;
+}
+
+export interface SearchResults {
+  pages: SearchResultPage[];
+  related_searches: string[];
+  query: string;
 }

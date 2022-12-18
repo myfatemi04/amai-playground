@@ -13,6 +13,7 @@ import GoogleCallback from "./GoogleCallback";
 import RequireAuth from "./RequireAuth";
 import Rap from "./promptexamples/Rap";
 import PromptDesigner from "./promptdesigner/PromptDesigner";
+import Interactive from "./interactive/Interactive";
 
 const Redirect = () => {
   window.location.href = googleOauthUrl;
@@ -44,7 +45,18 @@ root.render(
     <Router>
       <Routes>
         <Route path="/">
-          <Route path="prompt-designer" element={<PromptDesigner promptId={new URL(window.location.href).searchParams.get("promptId")} />} />
+          <Route
+            path="prompt-designer"
+            element={
+              <RequireAuth>
+                <PromptDesigner
+                  promptId={new URL(window.location.href).searchParams.get(
+                    "promptId"
+                  )}
+                />
+              </RequireAuth>
+            }
+          />
           <Route path="prompt-examples">
             <Route
               path="rap"
@@ -55,13 +67,35 @@ root.render(
               }
             />
           </Route>
-          <Route path="generation" element={<Generation />} />
-          <Route path="research" element={<Research />} />
+          <Route
+            path="generation"
+            element={
+              <RequireAuth>
+                <Generation />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="research"
+            element={
+              <RequireAuth>
+                <Research />
+              </RequireAuth>
+            }
+          />
           <Route
             path="researchwriting"
             element={
               <RequireAuth>
                 <ResearchWriting />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="interactive"
+            element={
+              <RequireAuth>
+                <Interactive />
               </RequireAuth>
             }
           />
