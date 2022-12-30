@@ -148,7 +148,10 @@ function escapeForMarkdown(text: string) {
   return text.replace("<", "&lt;").replace("#", "&#35;");
 }
 
-export function jsonToMarkdown(json: any) {
+export function jsonToMarkdown(
+  json: any,
+  options: { ignoreLinks: boolean; ignoreImages: boolean }
+) {
   const content: string[] = [];
   for (const child of json) {
     switch (child.type) {
@@ -156,21 +159,36 @@ export function jsonToMarkdown(json: any) {
         content.push(escapeForMarkdown(child.text));
         break;
       case "image":
-        content.push(`\n![${child.alt || ""}](${child.src})\n`);
+        if (options.ignoreImages) {
+          if (child.alt) {
+            content.push(`\n(Image: ${child.alt})\n`);
+          } else {
+            content.push("\n(Image)\n");
+          }
+        } else {
+          content.push(`\n![${child.alt || ""}](${child.src})\n`);
+        }
         break;
       case "link":
-        content.push(
-          `[${escapeForMarkdown(jsonToMarkdown(child.children))}](${
-            child.href
-          })`
-        );
+        if (options) {
+          content.push(jsonToMarkdown(child.children, options));
+        } else {
+          content.push(
+            `[${escapeForMarkdown(jsonToMarkdown(child.children, options))}](${
+              child.href
+            })`
+          );
+        }
         break;
       case "container":
-        content.push(jsonToMarkdown(child.children));
+        content.push(jsonToMarkdown(child.children, options));
         break;
       case "heading":
         content.push(
-          `\n${"#".repeat(child.level)} ${jsonToMarkdown(child.children)}\n`
+          `\n${"#".repeat(child.level)} ${jsonToMarkdown(
+            child.children,
+            options
+          )}\n`
         );
         break;
       case "code":
@@ -181,7 +199,7 @@ export function jsonToMarkdown(json: any) {
         }
         break;
       case "paragraph":
-        content.push(`\n${jsonToMarkdown(child.children)}\n`);
+        content.push(`\n${jsonToMarkdown(child.children, options)}\n`);
         break;
       default: {
         console.error("Unknown type", child.type, child);
@@ -196,8 +214,11 @@ export function htmlToJson(html: string) {
   return nodeToJson(htmlToDocument(html).body);
 }
 
-export function htmlToMarkdown(html: string) {
-  return jsonToMarkdown(htmlToJson(html));
+export function htmlToMarkdown(
+  html: string,
+  options: { ignoreLinks: boolean; ignoreImages: boolean }
+) {
+  return jsonToMarkdown(htmlToJson(html), options);
 }
 
 function htmlToDocument(html: string) {
@@ -212,18 +233,14 @@ async function getPageHtml(url: string) {
   return result as string;
 }
 
-export async function getMainArticleContentFromURL(url: string) {
-  const html = await getPageHtml(url);
+export function getMainArticle(html: string) {
   const readability = new Readability(htmlToDocument(html));
   const result = readability.parse();
-
-  return result ? result.content : null;
+  return result ? { content: result.content, title: result.title } : null;
 }
 
-export function getMainArticleContent(html: string) {
-  const readability = new Readability(htmlToDocument(html));
-  const result = readability.parse();
-  return result ? result.content : null;
+export async function getMainArticleFromURL(url: string) {
+  return getMainArticle(await getPageHtml(url));
 }
 
 // async function main() {

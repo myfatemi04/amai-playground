@@ -1,18 +1,30 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Button from "../Button";
 import Header from "../Header";
-import { getMainArticleContentFromURL, htmlToMarkdown } from "../html2markdown";
+import { getMainArticleFromURL, htmlToMarkdown } from "../html2markdown";
 import ArticleSummarizer from "./ArticleSummarizer";
 
 export default function ArticleSummarizingPage() {
   const [url, setUrl] = useState("");
-  const [markdown, setMarkdown] = useState<string | null>(null);
+  const [article, setArticle] = useState<{
+    content: string;
+    title: string;
+  } | null>(null);
 
   const loadContentForPage = useCallback(() => {
-    getMainArticleContentFromURL(url).then((content) =>
-      setMarkdown(content ? htmlToMarkdown(content) : null)
-    );
+    getMainArticleFromURL(url).then(setArticle);
   }, [url]);
+
+  const markdown = useMemo(() => {
+    if (!article) {
+      return null;
+    }
+
+    return htmlToMarkdown(article.content, {
+      ignoreImages: true,
+      ignoreLinks: true,
+    });
+  }, [article]);
 
   return (
     <div
@@ -42,7 +54,12 @@ export default function ArticleSummarizingPage() {
           Load
         </Button>
       </div>
-      <ArticleSummarizer markdown={markdown ?? "(null)"} />
+      {article && (
+        <ArticleSummarizer
+          markdown={markdown ?? "(null)"}
+          title={article.title}
+        />
+      )}
     </div>
   );
 }
