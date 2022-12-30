@@ -32,6 +32,19 @@ export async function api(path: string, body: any = {}) {
   return await result.json();
 }
 
+export class Prompt<Variables extends { [key: string]: string }> {
+  constructor(public readonly promptId: string) {}
+
+  async call(variables: Variables): Promise<string> {
+    const { completion } = await api("prompt", {
+      promptId: this.promptId,
+      variables,
+    });
+
+    return completion;
+  }
+}
+
 export interface SearchResultPage {
   title: string;
   url: string;

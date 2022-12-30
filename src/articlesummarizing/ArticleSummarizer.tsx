@@ -10,7 +10,7 @@ async function createAggregateResponse(question: string, subanswers: string[]) {
     prompt_id: "63ae608b29223dec63ce9621",
     variables: {
       question,
-      subanswers: subanswers.map(ans => ans.trim()).join("\n\n"),
+      subanswers: subanswers.map((ans) => ans.trim()).join("\n\n"),
     },
   });
   return completion;
@@ -28,10 +28,15 @@ export default function ArticleSummarizer({
   const [aggregateResponse, setAggregateResponse] = useState<string | null>(
     null
   );
+  const [status, setStatus] = useState("Ready");
 
   const markdownChunks = useMemo(() => chunkText(markdown, 4096), [markdown]);
 
   const generateCompletions = useCallback(async () => {
+    setStatus(
+      "Breaking document into chunks and ranking them for relevance..."
+    );
+
     const { documentSimilarityScores } = await rateDocumentsForQuery(
       markdownChunks,
       instruction
@@ -42,10 +47,12 @@ export default function ArticleSummarizer({
       .sort((a, b) => documentSimilarityScores[b] - documentSimilarityScores[a])
       .slice(0, 5);
 
-    console.log(topDocumentIndices);
+    console.log("Debug:", { topDocumentIndices });
 
     // Select the top 5 documents
     const topDocumentChunks = topDocumentIndices.map((i) => markdownChunks[i]);
+
+    setStatus("Generating completions for each document section...")
 
     const promises = await Promise.allSettled(
       topDocumentChunks.map((markdown) =>
@@ -69,11 +76,16 @@ export default function ArticleSummarizer({
       }
     }
     setCompletions(completions);
+
+    setStatus("Compiling completions into a single response...")
+
     const aggregateResponse = await createAggregateResponse(
       instruction,
       completions
     );
     setAggregateResponse(aggregateResponse);
+
+    setStatus("Ready")
   }, [instruction, markdownChunks, title]);
 
   return (
@@ -95,16 +107,15 @@ export default function ArticleSummarizer({
           Answer
         </Button>
       </div>
-      {completions !== null ? (
+      <p>{status}</p>
+      {aggregateResponse !== null && (
         <>
           <p>Answer</p>
-          <pre>{aggregateResponse}</pre>
+          <pre>{aggregateResponse.trim()}</pre>
           {/* {completions.map((completion, idx) => (
             <pre key={idx}>{completion.trim()}</pre>
           ))} */}
         </>
-      ) : (
-        <p>No answer yet</p>
       )}
       <h1>{title}</h1>
       <ReactMarkdown children={markdown} />

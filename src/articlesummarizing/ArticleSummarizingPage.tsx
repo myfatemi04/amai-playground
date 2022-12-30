@@ -34,6 +34,9 @@ export default function ArticleSummarizingPage() {
         padding: "2rem",
         display: "flex",
         flexDirection: "column",
+        height: "100vh",
+        boxSizing: "border-box",
+        overflowY: "auto",
       }}
     >
       <Header>Internet Question Answering</Header>
