@@ -225,22 +225,10 @@ function htmlToDocument(html: string) {
   return new DOMParser().parseFromString(html, "text/html");
 }
 
-async function getPageHtml(url: string) {
-  const { result } = await api("retrieval_enhancement", {
-    backend: "proxy",
-    query: url,
-  });
-  return result as string;
-}
-
 export function getMainArticle(html: string) {
   const readability = new Readability(htmlToDocument(html));
   const result = readability.parse();
   return result ? { content: result.content, title: result.title } : null;
-}
-
-export async function getMainArticleFromURL(url: string) {
-  return getMainArticle(await getPageHtml(url));
 }
 
 // async function main() {

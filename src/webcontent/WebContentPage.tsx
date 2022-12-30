@@ -1,8 +1,17 @@
 import { useCallback, useMemo, useState } from "react";
+import { api } from "../api";
 import Button from "../Button";
 import Header from "../Header";
-import { getMainArticleFromURL, htmlToMarkdown } from "../html2markdown";
+import { getMainArticle, htmlToMarkdown } from "../html2markdown";
 import ArticleSummarizer from "./WebContentAgent";
+
+async function getPage(url: string) {
+  const { result } = await api("retrieval_enhancement", {
+    backend: "proxy",
+    query: url,
+  });
+  return result as { content: string; type: "html" | "" };
+}
 
 export default function WebContentPage() {
   const [url, setUrl] = useState("");
@@ -12,7 +21,16 @@ export default function WebContentPage() {
   } | null>(null);
 
   const loadContentForPage = useCallback(() => {
-    getMainArticleFromURL(url).then(setArticle);
+    getPage(url).then(({ content, type }) => {
+      if (type === "html") {
+        setArticle(getMainArticle(content));
+      } else {
+        setArticle({
+          content,
+          title: "[PDF]",
+        });
+      }
+    });
   }, [url]);
 
   const markdown = useMemo(() => {
