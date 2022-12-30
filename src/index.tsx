@@ -1,19 +1,19 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
-import Research from "./Research";
-import "./index.css";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import ArticleSummarizingPage from "./articlesummarizing/ArticleSummarizingPage";
 import Generation from "./Generation";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import reportWebVitals from "./reportWebVitals";
-import NotFound from "./NotFound";
+import GoogleCallback from "./GoogleCallback";
 import Home from "./Home";
+import "./index.css";
+import Interactive from "./interactive/Interactive";
+import NotFound from "./NotFound";
+import PromptDesigner from "./promptdesigner/PromptDesigner";
+import Rap from "./promptexamples/Rap";
+import reportWebVitals from "./reportWebVitals";
+import RequireAuth from "./RequireAuth";
+import Research from "./Research";
 import ResearchWriting from "./researchwriting/ResearchWriting";
 import UserProvider, { googleOauthUrl } from "./UserProvider";
-import GoogleCallback from "./GoogleCallback";
-import RequireAuth from "./RequireAuth";
-import Rap from "./promptexamples/Rap";
-import PromptDesigner from "./promptdesigner/PromptDesigner";
-import Interactive from "./interactive/Interactive";
 
 const Redirect = () => {
   window.location.href = googleOauthUrl;
@@ -45,6 +45,7 @@ root.render(
     <Router>
       <Routes>
         <Route path="/">
+          <Route path="summarizing" element={<ArticleSummarizingPage />} />
           <Route
             path="prompt-designer"
             element={
