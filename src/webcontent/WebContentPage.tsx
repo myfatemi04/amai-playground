@@ -2,9 +2,9 @@ import { useCallback, useMemo, useState } from "react";
 import Button from "../Button";
 import Header from "../Header";
 import { getMainArticleFromURL, htmlToMarkdown } from "../html2markdown";
-import ArticleSummarizer from "./ArticleSummarizer";
+import ArticleSummarizer from "./WebContentAgent";
 
-export default function ArticleSummarizingPage() {
+export default function WebContentPage() {
   const [url, setUrl] = useState("");
   const [article, setArticle] = useState<{
     content: string;
@@ -39,7 +39,7 @@ export default function ArticleSummarizingPage() {
         overflowY: "auto",
       }}
     >
-      <Header>Internet Question Answering</Header>
+      <Header>Internet ChatGPT</Header>
       <p>Choose page</p>
       <div style={{ display: "flex" }}>
         <input

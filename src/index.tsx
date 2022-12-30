@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import ArticleSummarizingPage from "./articlesummarizing/ArticleSummarizingPage";
+import WebContentPage from "./webcontent/WebContentPage";
 import Generation from "./Generation";
 import GoogleCallback from "./GoogleCallback";
 import Home from "./Home";
@@ -45,7 +45,7 @@ root.render(
     <Router>
       <Routes>
         <Route path="/">
-          <Route path="summarizing" element={<ArticleSummarizingPage />} />
+          <Route path="web" element={<WebContentPage />} />
           <Route
             path="prompt-designer"
             element={
