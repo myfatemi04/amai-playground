@@ -1,17 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
-import { api } from "../api";
+import { getPage } from "../api";
 import Button from "../Button";
 import Header from "../Header";
-import { getMainArticle, htmlToMarkdown } from "../html2markdown";
+import { htmlToMarkdown } from "../html2markdown";
 import ArticleSummarizer from "./WebContentAgent";
-
-async function getPage(url: string) {
-  const { result } = await api("retrieval_enhancement", {
-    backend: "proxy",
-    query: url,
-  });
-  return result as { content: string; type: "html" | "text-from-pdf" | "s3" };
-}
 
 export default function WebContentPage() {
   const [url, setUrl] = useState("");
@@ -25,23 +17,7 @@ export default function WebContentPage() {
   const loadContentForPage = useCallback(async () => {
     try {
       setArticlePrefixText("Loading...");
-      let { content, type } = await getPage(url);
-      if (type === "s3") {
-        const path = content;
-        content = await fetch(
-          "https://augmate-retrieval-content.s3.amazonaws.com/" + path
-        ).then((r) => r.text());
-        type = path.includes("html") ? "html" : "text-from-pdf";
-      }
-
-      if (type === "html") {
-        setArticle(getMainArticle(content));
-      } else if (type === "text-from-pdf") {
-        setArticle({
-          content,
-          title: "[PDF]",
-        });
-      }
+      setArticle(await getPage(url));
       setArticlePrefixText("Loaded!");
     } catch (e) {
       console.error(e);

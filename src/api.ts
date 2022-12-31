@@ -1,3 +1,5 @@
+import { getMainArticle, htmlToMarkdown } from "./html2markdown";
+
 export async function getToken(): Promise<string> {
   if (window.location.pathname === "/researchwriting") {
     return "$research-writing";
@@ -12,6 +14,49 @@ export async function getSearchResults(query: string): Promise<SearchResults> {
     query,
   });
   return { ...result, query };
+}
+
+async function getPageHelper(url: string) {
+  const { result } = await api("retrieval_enhancement", {
+    backend: "proxy",
+    query: url,
+  });
+  return result as { content: string; type: "html" | "text-from-pdf" | "s3" };
+}
+
+export async function getPage(
+  url: string
+): Promise<{ content: string; title: string } | null> {
+  let { content, type } = await getPageHelper(url);
+  if (type === "s3") {
+    const path = content;
+    content = await fetch(
+      "https://augmate-retrieval-content.s3.amazonaws.com/" + path
+    ).then((r) => r.text());
+    type = path.includes("html") ? "html" : "text-from-pdf";
+  }
+
+  if (type === "html") {
+    const result = getMainArticle(content);
+    if (result) {
+      return {
+        content: htmlToMarkdown(result.content, {
+          ignoreImages: true,
+          ignoreLinks: true,
+        }),
+        title: result.title,
+      };
+    } else {
+      return null;
+    }
+  } else if (type === "text-from-pdf") {
+    return {
+      content,
+      title: "[PDF]",
+    };
+  } else {
+    throw new Error("Unknown type: " + type);
+  }
 }
 
 export async function api(path: string, body: any = {}) {

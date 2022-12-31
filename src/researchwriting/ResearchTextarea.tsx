@@ -5,11 +5,12 @@ import {
   useContext,
   useEffect,
   useRef,
-  useState
+  useState,
 } from "react";
 import { api } from "../api";
 import { EventLoggingContext } from "./EventLogging";
 import { PageContentCacheContext } from "./PageContentCache";
+import ResearchWritingContext from "./ResearchWritingContext";
 import { TextareaContext } from "./TextareaProvider";
 import useCursor from "./useCursor";
 import useScrollHeight from "./useScrollHeight";
@@ -30,19 +31,14 @@ async function continueWithRetrievedPage(
   return completion;
 }
 
-export default function RWTextArea({
-  style = {},
-  draggedUrl,
-}: {
-  style?: CSSProperties;
-  draggedUrl: string | null;
-}) {
+export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const [content, setContent] = useState<string>("");
   const cursor = useCursor(ref.current);
   const { request } = useContext(PageContentCacheContext);
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
+  const { draggedUrl, setDropHistory } = useContext(ResearchWritingContext);
 
   const textareaStyle: CSSProperties = {
     fontFamily: "sans-serif",
@@ -87,10 +83,15 @@ export default function RWTextArea({
           console.warn("onDrop called, but content is null");
           return;
         }
+        console.log(draggedUrlContent);
+        setDropHistory((history) => [
+          ...history,
+          { url: draggedUrl, title: draggedUrlContent.title },
+        ]);
         try {
           const continuation = await continueWithRetrievedPage(
             draggedUrlContent.title,
-            draggedUrlContent.textContent,
+            draggedUrlContent.content,
             content.slice(0, cursor + 1)
           );
           const text =
@@ -101,7 +102,7 @@ export default function RWTextArea({
             type: "drag",
             url: draggedUrl,
             title: draggedUrlContent.title,
-            snippet: draggedUrlContent.textContent,
+            snippet: draggedUrlContent.content,
             content,
             cursor,
           });

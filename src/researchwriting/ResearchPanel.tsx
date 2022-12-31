@@ -3,32 +3,32 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useState
+  useState,
 } from "react";
 import { api, SearchResults } from "../api";
 import { EventLoggingContext } from "./EventLogging";
+import ResearchWritingContext from "./ResearchWritingContext";
 import { TextareaContext } from "./TextareaProvider";
 
 async function getSearchResults(query: string): Promise<SearchResults> {
-  const { result } = await api("retrieval_enhancement", {
+  const {
+    result: { content },
+  } = await api("retrieval_enhancement", {
     backend: "bing",
     query,
   });
-  return { ...result, query };
+  return { ...content, query };
 }
 
 const SEARCH_TIMEOUT_MS = 2000;
 
-export default function RWResearchPanel({
-  setDraggedUrl,
-}: {
-  setDraggedUrl: (url: string | null) => void;
-}) {
+export default function RWResearchPanel() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults>();
   const [status, setStatus] = useState<"idle" | "pending" | "errored">("idle");
   const { logEvent, logError } = useContext(EventLoggingContext);
   const { content } = useContext(TextareaContext);
+  const { setDraggedUrl } = useContext(ResearchWritingContext);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -92,6 +92,7 @@ export default function RWResearchPanel({
               href={result.url}
               target="_blank"
               rel="noreferrer"
+              className="dark_a"
               style={{ fontWeight: "bold" }}
             >
               {result.title}
