@@ -32,7 +32,7 @@ export default function ArticleSummarizer({
   const markdownChunks = useMemo(() => chunkText(markdown, 4096), [markdown]);
 
   const generateCompletions = useCallback(async () => {
-    const chunkCount = 5;
+    const chunkCount = 3;
     let topDocumentIndices: number[];
     if (markdownChunks.length <= chunkCount) {
       setStatus(
