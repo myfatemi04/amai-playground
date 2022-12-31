@@ -200,22 +200,22 @@ export default function ArticleSummarizer({
               <pre>{JSON.stringify(chunkRankings, null, 2)}</pre>
             </>
           )}
-        </>
-      )}
-      {completions !== null && chunkRankings !== null && (
-        <>
-          <p>Completions</p>
-          {completions.map((completion, i) => (
+          {completions !== null && chunkRankings !== null && (
             <>
-              <p>
-                Chunk {chunkRankings[i] + 1} / {chunkRankings.length}
-              </p>
-              <pre style={{ color: "green" }}>
-                {chunks[chunkRankings[i]].trim()}
-              </pre>
-              <pre style={{ color: "red" }}>{completion.trim()}</pre>
+              <p>Completions</p>
+              {completions.map((completion, i) => (
+                <>
+                  <p>
+                    Chunk {chunkRankings[i] + 1} / {chunkRankings.length}
+                  </p>
+                  <pre style={{ color: "green" }}>
+                    {chunks[chunkRankings[i]].trim()}
+                  </pre>
+                  <pre style={{ color: "red" }}>{completion.trim()}</pre>
+                </>
+              ))}
             </>
-          ))}
+          )}
         </>
       )}
       <h1>{title}</h1>
