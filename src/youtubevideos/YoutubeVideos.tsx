@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getYoutubeTranscript, TranscriptItem } from "../api";
 import Button from "../Button";
 import Header from "../Header";
@@ -58,6 +58,11 @@ export default function YoutubeVideos() {
         setStatus(`Error: ${s}`);
       }
     }
+  }, [url]);
+  useEffect(() => {
+    setDisplay(false);
+    setStatus("Ready");
+    setTranscript(null);
   }, [url]);
 
   return (
