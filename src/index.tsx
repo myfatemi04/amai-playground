@@ -45,7 +45,14 @@ root.render(
     <Router>
       <Routes>
         <Route path="/">
-          <Route path="web" element={<WebContentPage />} />
+          <Route
+            path="web"
+            element={
+              <RequireAuth>
+                <WebContentPage />
+              </RequireAuth>
+            }
+          />
           <Route
             path="prompt-designer"
             element={

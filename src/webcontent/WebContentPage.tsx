@@ -10,7 +10,7 @@ async function getPage(url: string) {
     backend: "proxy",
     query: url,
   });
-  return result as { content: string; type: "html" | "" };
+  return result as { content: string; type: "html" | "text-from-pdf" | "s3" };
 }
 
 export default function WebContentPage() {
@@ -21,10 +21,17 @@ export default function WebContentPage() {
   } | null>(null);
 
   const loadContentForPage = useCallback(() => {
-    getPage(url).then(({ content, type }) => {
+    getPage(url).then(async ({ content, type }) => {
+      if (type === "s3") {
+        const path = content;
+        content = await fetch(
+          "https://augmate-retrieval-content.s3.amazonaws.com/" + path
+        ).then((r) => r.text());
+        type = path.includes("html") ? "html" : "text-from-pdf";
+      }
       if (type === "html") {
         setArticle(getMainArticle(content));
-      } else {
+      } else if (type === "text-from-pdf") {
         setArticle({
           content,
           title: "[PDF]",
@@ -57,7 +64,7 @@ export default function WebContentPage() {
         overflowY: "auto",
       }}
     >
-      <Header>Internet ChatGPT</Header>
+      <Header>Research AI</Header>
       <p>Choose page</p>
       <div style={{ display: "flex" }}>
         <input
