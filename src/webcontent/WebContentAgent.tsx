@@ -34,7 +34,8 @@ export default function ArticleSummarizer({
   const generateCompletions = useCallback(async () => {
     const chunkCount = 3;
     let topDocumentIndices: number[];
-    if (markdownChunks.length <= chunkCount) {
+    console.log("Number of markdownChunks:", markdownChunks.length);
+    if (markdownChunks.length > chunkCount) {
       setStatus(
         "Breaking document into chunks and ranking them for relevance..."
       );
