@@ -115,7 +115,7 @@ export default function ArticleSummarizer({
     } else {
       // Take the top 5 documents
       topDocumentIndices = [];
-      for (let i = 0; i < chunkCount; i++) {
+      for (let i = 0; i < chunks.length; i++) {
         topDocumentIndices.push(i);
       }
     }
@@ -139,8 +139,8 @@ export default function ArticleSummarizer({
     );
     const completions: string[] = [];
     for (const promise of promises) {
-      if (promise.status === "rejected") {
-        console.warn("Failed to generate completions", promise.reason);
+      if (promise.status === "rejected" || promise.value == null) {
+        console.warn("Failed to generate completions", promise);
         setStatus("Failed to generate completions for document sections");
         setCompletions(null);
         setAggregateResponse(null);
