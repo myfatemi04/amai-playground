@@ -24,7 +24,6 @@ export default function ArticleSummarizer({
   title: string;
 }) {
   const [instruction, setInstruction] = useState("");
-  const [completions, setCompletions] = useState<string[] | null>(null);
   const [aggregateResponse, setAggregateResponse] = useState<string | null>(
     null
   );
@@ -33,26 +32,38 @@ export default function ArticleSummarizer({
   const markdownChunks = useMemo(() => chunkText(markdown, 4096), [markdown]);
 
   const generateCompletions = useCallback(async () => {
-    setStatus(
-      "Breaking document into chunks and ranking them for relevance..."
-    );
+    const chunkCount = 5;
+    let topDocumentIndices: number[];
+    if (markdownChunks.length <= chunkCount) {
+      setStatus(
+        "Breaking document into chunks and ranking them for relevance..."
+      );
 
-    const { documentSimilarityScores } = await rateDocumentsForQuery(
-      markdownChunks,
-      instruction
-    );
-    // Take the top 5 documents
-    const topDocumentIndices = documentSimilarityScores
-      .map((_, i) => i)
-      .sort((a, b) => documentSimilarityScores[b] - documentSimilarityScores[a])
-      .slice(0, 5);
+      const { documentSimilarityScores } = await rateDocumentsForQuery(
+        markdownChunks,
+        instruction
+      );
+      // Take the top 5 documents
+      topDocumentIndices = documentSimilarityScores
+        .map((_, i) => i)
+        .sort(
+          (a, b) => documentSimilarityScores[b] - documentSimilarityScores[a]
+        )
+        .slice(0, chunkCount);
 
-    console.log("Debug:", { topDocumentIndices });
+      console.log("Debug:", { topDocumentIndices });
+    } else {
+      // Take the top 5 documents
+      topDocumentIndices = [];
+      for (let i = 0; i < chunkCount; i++) {
+        topDocumentIndices.push(i);
+      }
+    }
 
     // Select the top 5 documents
     const topDocumentChunks = topDocumentIndices.map((i) => markdownChunks[i]);
 
-    setStatus("Generating completions for each document section...")
+    setStatus("Generating completions for each document section...");
 
     const promises = await Promise.allSettled(
       topDocumentChunks.map((markdown) =>
@@ -75,9 +86,8 @@ export default function ArticleSummarizer({
         completions.push(promise.value.completion);
       }
     }
-    setCompletions(completions);
 
-    setStatus("Compiling completions into a single response...")
+    setStatus("Compiling completions into a single response...");
 
     const aggregateResponse = await createAggregateResponse(
       instruction,
@@ -85,12 +95,12 @@ export default function ArticleSummarizer({
     );
     setAggregateResponse(aggregateResponse);
 
-    setStatus("Ready")
+    setStatus("Ready");
   }, [instruction, markdownChunks, title]);
 
   return (
     <div>
-      <p>Question</p>
+      <p>Prompt</p>
       <div style={{ display: "flex" }}>
         <input
           type="text"
@@ -104,7 +114,7 @@ export default function ArticleSummarizer({
           margin="0 0 0 1rem"
           onClick={generateCompletions}
         >
-          Answer
+          Compute
         </Button>
       </div>
       <p>{status}</p>
