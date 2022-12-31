@@ -16,6 +16,8 @@ async function createAggregateResponse(question: string, subanswers: string[]) {
   return completion;
 }
 
+const _dev_ = false;
+
 export default function ArticleSummarizer({
   markdown,
   title,
@@ -187,15 +189,17 @@ export default function ArticleSummarizer({
           <pre>{aggregateResponse.trim()}</pre>
         </>
       )}
-      {/* <>
-        {chunks.map((chunk) => (
-          <pre style={{ color: "gold" }}>{chunk}</pre>
-        ))}
-      </> */}
-      {chunkRankings !== null && (
+      {_dev_ && (
         <>
-          <p>Chunk rankings</p>
-          <pre>{JSON.stringify(chunkRankings, null, 2)}</pre>
+          {chunks.map((chunk) => (
+            <pre style={{ color: "gold" }}>{chunk}</pre>
+          ))}
+          {chunkRankings !== null && (
+            <>
+              <p>Chunk rankings</p>
+              <pre>{JSON.stringify(chunkRankings, null, 2)}</pre>
+            </>
+          )}
         </>
       )}
       {completions !== null && chunkRankings !== null && (
