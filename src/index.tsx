@@ -1,6 +1,5 @@
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import WebContentPage from "./webcontent/WebContentPage";
 import Generation from "./Generation";
 import GoogleCallback from "./GoogleCallback";
 import Home from "./Home";
@@ -14,6 +13,8 @@ import RequireAuth from "./RequireAuth";
 import Research from "./Research";
 import ResearchWriting from "./researchwriting/ResearchWriting";
 import UserProvider, { googleOauthUrl } from "./UserProvider";
+import WebContentPage from "./webcontent/WebContentPage";
+import YoutubeVideos from "./youtubevideos/YoutubeVideos";
 
 const Redirect = () => {
   window.location.href = googleOauthUrl;
@@ -45,6 +46,14 @@ root.render(
     <Router>
       <Routes>
         <Route path="/">
+          <Route
+            path="youtube"
+            element={
+              <RequireAuth>
+                <YoutubeVideos />
+              </RequireAuth>
+            }
+          />
           <Route
             path="web"
             element={

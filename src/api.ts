@@ -15,11 +15,29 @@ export async function createEmbedding(prompt: string): Promise<number[]> {
 }
 
 export async function getSearchResults(query: string): Promise<SearchResults> {
-  const { result } = await api("retrieval_enhancement", {
+  const {
+    result: { content },
+  } = await api("retrieval_enhancement", {
     backend: "bing",
     query,
   });
-  return { ...result, query };
+  return { ...content, query };
+}
+
+export type TranscriptItem = {
+  start: number;
+  duration: number;
+  text: string;
+};
+
+export async function getYoutubeTranscript(
+  query: string
+): Promise<TranscriptItem[]> {
+  const response = await api("retrieval_enhancement", {
+    backend: "youtube",
+    query,
+  });
+  return response.result.content;
 }
 
 async function getPageHelper(url: string) {
@@ -66,7 +84,7 @@ export async function getPage(
 }
 
 export async function api(path: string, body: any = {}) {
-  const result = await fetch(
+  const response = await fetch(
     `https://7azz4l2unk.execute-api.us-east-1.amazonaws.com/${path}`,
     {
       method: "POST",
@@ -80,7 +98,11 @@ export async function api(path: string, body: any = {}) {
       }),
     }
   );
-  return await result.json();
+  const result = await response.json();
+  if ("error" in result || response.status !== 200) {
+    throw new Error(result.error);
+  }
+  return result;
 }
 
 export class Prompt<Variables extends { [key: string]: string }> {

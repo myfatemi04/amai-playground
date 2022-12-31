@@ -5,20 +5,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import { api, SearchResults } from "../api";
+import { getSearchResults, SearchResults } from "../api";
 import { EventLoggingContext } from "./EventLogging";
 import ResearchWritingContext from "./ResearchWritingContext";
 import { TextareaContext } from "./TextareaProvider";
-
-async function getSearchResults(query: string): Promise<SearchResults> {
-  const {
-    result: { content },
-  } = await api("retrieval_enhancement", {
-    backend: "bing",
-    query,
-  });
-  return { ...content, query };
-}
 
 const SEARCH_TIMEOUT_MS = 2000;
 
@@ -37,13 +27,8 @@ export default function RWResearchPanel() {
     const timeout = setTimeout(async () => {
       setStatus("pending");
       try {
-        logEvent({
-          type: "search",
-          query,
-          content,
-        });
-        const results = await getSearchResults(query);
-        setResults(results);
+        logEvent({ type: "search", query, content });
+        setResults(await getSearchResults(query));
         setStatus("idle");
       } catch (e) {
         logError(e);

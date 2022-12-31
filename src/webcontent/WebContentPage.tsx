@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { getPage } from "../api";
 import Button from "../Button";
 import Header from "../Header";
-import ArticleSummarizer from "./WebContentAgent";
+import LongformPromptAnswering from "../LongformPromptAnswering";
 
 export default function WebContentPage() {
   const [url, setUrl] = useState("");
@@ -81,7 +81,7 @@ export default function WebContentPage() {
       </div>
       <p>{articlePrefixText}</p>
       {article && (
-        <ArticleSummarizer
+        <LongformPromptAnswering
           markdown={article.content ?? "(null)"}
           title={article.title}
         />

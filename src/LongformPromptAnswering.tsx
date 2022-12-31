@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { api, createEmbedding } from "../api";
-import Button from "../Button";
-import chunkText from "../chunkText";
-import { rateDocumentEmbeddingsForQueryEmbedding } from "../rateDocumentsForQuery";
+import { api, createEmbedding } from "./api";
+import Button from "./Button";
+import chunkText from "./chunkText";
+import { rateDocumentEmbeddingsForQueryEmbedding } from "./rateDocumentsForQuery";
 
-async function createAggregateResponse(question: string, subanswers: string[]) {
+async function createAggregateResponse(
+  question: string,
+  subanswers: string[],
+  compileCompletionsPromptId: string
+) {
   const { completion } = await api("generate_for_prompt", {
-    prompt_id: "63ae608b29223dec63ce9621",
+    prompt_id: compileCompletionsPromptId,
     variables: {
       question,
       subanswers: subanswers.map((ans) => ans.trim()).join("\n\n"),
@@ -16,14 +20,18 @@ async function createAggregateResponse(question: string, subanswers: string[]) {
   return completion;
 }
 
-const _dev_ = false;
+const _dev_ = window.location.hostname === "localhost";
 
-export default function ArticleSummarizer({
+export default function LongformPromptAnswering({
   markdown,
   title,
+  independentSectionCompletionPromptId = "639695953ee71dbb54be8165",
+  compileCompletionsPromptId = "63ae608b29223dec63ce9621",
 }: {
   markdown: string;
   title: string;
+  independentSectionCompletionPromptId?: string;
+  compileCompletionsPromptId?: string;
 }) {
   const [instruction, setInstruction] = useState("");
   const [aggregateResponse, setAggregateResponse] = useState<string | null>(
@@ -128,7 +136,7 @@ export default function ArticleSummarizer({
     const promises = await Promise.allSettled(
       topDocumentChunks.map((markdown) =>
         api("generate_for_prompt", {
-          prompt_id: "639695953ee71dbb54be8165",
+          prompt_id: independentSectionCompletionPromptId,
           variables: {
             title: title,
             content: markdown,
@@ -156,12 +164,20 @@ export default function ArticleSummarizer({
 
     const aggregateResponse = await createAggregateResponse(
       instruction,
-      completions
+      completions,
+      compileCompletionsPromptId
     );
     setAggregateResponse(aggregateResponse);
 
     setStatus("Ready");
-  }, [chunks, instruction, chunkEmbeddings, title]);
+  }, [
+    chunks,
+    instruction,
+    compileCompletionsPromptId,
+    chunkEmbeddings,
+    independentSectionCompletionPromptId,
+    title,
+  ]);
 
   return (
     <div>
