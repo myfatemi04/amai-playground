@@ -1,8 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { getPage } from "../api";
 import Button from "../Button";
 import Header from "../Header";
-import { htmlToMarkdown } from "../html2markdown";
 import ArticleSummarizer from "./WebContentAgent";
 
 export default function WebContentPage() {
@@ -24,17 +23,6 @@ export default function WebContentPage() {
       setArticlePrefixText("Error");
     }
   }, [url]);
-
-  const markdown = useMemo(() => {
-    if (!article) {
-      return null;
-    }
-
-    return htmlToMarkdown(article.content, {
-      ignoreImages: true,
-      ignoreLinks: true,
-    });
-  }, [article]);
 
   return (
     <div
@@ -94,7 +82,7 @@ export default function WebContentPage() {
       <p>{articlePrefixText}</p>
       {article && (
         <ArticleSummarizer
-          markdown={markdown ?? "(null)"}
+          markdown={article.content ?? "(null)"}
           title={article.title}
         />
       )}

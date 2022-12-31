@@ -5,7 +5,7 @@ import {
   useContext,
   useEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import { api } from "../api";
 import { EventLoggingContext } from "./EventLogging";
@@ -120,7 +120,7 @@ export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
 
       run();
     },
-    [draggedUrl, request, content, cursor, logEvent, logError]
+    [draggedUrl, request, setDropHistory, content, cursor, logEvent, logError]
   );
 
   const createSuggestion = useCallback(async () => {
