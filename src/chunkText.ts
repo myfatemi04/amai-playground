@@ -1,9 +1,22 @@
 function nextChunk(
   text: string,
-  chunkSize: number,
-  breakWordIfLongerThan = chunkSize
+  minChunkSize: number,
+  maxChunkSize: number,
+  breakWordIfLongerThan = maxChunkSize
 ) {
-  let chunk = text.slice(0, chunkSize);
+  let chunk: string;
+
+  if (text.length <= maxChunkSize) {
+    return [text, ""];
+  }
+
+  // maxChunkSize + minChunkSize > text.length > maxChunkSize
+  if (text.length - maxChunkSize < minChunkSize) {
+    // Distribute remaining text evently between last 2 chunks
+    chunk = text.slice(0, maxChunkSize / 2);
+  } else {
+    chunk = text.slice(0, maxChunkSize);
+  }
 
   // Avoid breaking words
   let lastWordEnd = chunk.lastIndexOf(" ");
@@ -23,15 +36,17 @@ function nextChunk(
 
 export default function chunkText(
   text: string,
-  chunkSize: number,
-  breakWordIfLongerThan = chunkSize
+  minChunkSize: number,
+  maxChunkSize: number,
+  breakWordIfLongerThan = maxChunkSize
 ) {
   // Avoid breaking words
   let chunks: string[] = [];
   while (text) {
     const [chunk, remaining] = nextChunk(
       text,
-      chunkSize,
+      minChunkSize,
+      maxChunkSize,
       breakWordIfLongerThan
     );
     chunks.push(chunk);

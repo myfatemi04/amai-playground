@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { api } from "../api";
+import { api, createEmbedding } from "../api";
 import Button from "../Button";
 import chunkText from "../chunkText";
-import rateDocumentsForQuery from "../rateDocumentsForQuery";
+import { rateDocumentEmbeddingsForQueryEmbedding } from "../rateDocumentsForQuery";
 
 async function createAggregateResponse(question: string, subanswers: string[]) {
   const { completion } = await api("generate_for_prompt", {
@@ -29,28 +29,85 @@ export default function ArticleSummarizer({
   );
   const [status, setStatus] = useState("Ready");
 
-  const markdownChunks = useMemo(() => chunkText(markdown, 4096), [markdown]);
+  const chunks = useMemo(() => {
+    const paragraphs = markdown.split("\n\n");
+    const filteredParagraphs = [];
+    for (let paragraph of paragraphs) {
+      paragraph = paragraph.trim();
+      if (paragraph.toLowerCase() === "references") {
+        break;
+      }
+      if (paragraph.length > 10) {
+        filteredParagraphs.push(paragraph);
+      }
+    }
+
+    console.log({ filteredParagraphs });
+
+    return chunkText(filteredParagraphs.join("\n\n"), 2048, 4096);
+  }, [markdown]);
+  const [chunkEmbeddings, setChunkEmbeddings] = useState<number[][] | null>(
+    null
+  );
+
+  // For debugging / visualization
+  const [chunkRankings, setChunkRankings] = useState<number[] | null>(null);
+  const [completions, setCompletions] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    setCompletions(null);
+    setChunkRankings(null);
+    setChunkEmbeddings(null);
+  }, [markdown]);
 
   const generateCompletions = useCallback(async () => {
     const chunkCount = 3;
+
     let topDocumentIndices: number[];
-    console.log("Number of markdownChunks:", markdownChunks.length);
-    if (markdownChunks.length > chunkCount) {
+    console.log("Number of markdownChunks:", chunks.length);
+    if (chunks.length > chunkCount) {
       setStatus(
         "Breaking document into chunks and ranking them for relevance..."
       );
 
-      const { documentSimilarityScores } = await rateDocumentsForQuery(
-        markdownChunks,
-        instruction
+      let chunkEmbeddingsGuaranteed;
+
+      if (chunkEmbeddings == null) {
+        const promises = await Promise.allSettled(chunks.map(createEmbedding));
+        const embeddings: number[][] = [];
+
+        for (const promise of promises) {
+          if (promise.status === "rejected") {
+            console.warn("Failed to generate embeddings", promise.reason);
+            setStatus("Failed to generate embeddings for document sections");
+            return;
+          } else {
+            embeddings.push(promise.value);
+          }
+        }
+
+        setChunkEmbeddings(embeddings);
+        chunkEmbeddingsGuaranteed = embeddings;
+      } else {
+        chunkEmbeddingsGuaranteed = chunkEmbeddings;
+      }
+
+      const instructionEmbedding = await createEmbedding(instruction);
+
+      const documentSimilarityScores = rateDocumentEmbeddingsForQueryEmbedding(
+        instructionEmbedding,
+        chunkEmbeddingsGuaranteed
       );
-      // Take the top 5 documents
-      topDocumentIndices = documentSimilarityScores
+
+      const documentRankings = documentSimilarityScores
         .map((_, i) => i)
         .sort(
           (a, b) => documentSimilarityScores[b] - documentSimilarityScores[a]
-        )
-        .slice(0, chunkCount);
+        );
+      // Take the top 5 documents
+      topDocumentIndices = documentRankings.slice(0, chunkCount);
+
+      setChunkRankings(documentRankings);
 
       console.log("Debug:", { topDocumentIndices });
     } else {
@@ -62,7 +119,7 @@ export default function ArticleSummarizer({
     }
 
     // Select the top 5 documents
-    const topDocumentChunks = topDocumentIndices.map((i) => markdownChunks[i]);
+    const topDocumentChunks = topDocumentIndices.map((i) => chunks[i]);
 
     setStatus("Generating completions for each document section...");
 
@@ -78,15 +135,20 @@ export default function ArticleSummarizer({
         })
       )
     );
-    const completions = [];
+    const completions: string[] = [];
     for (const promise of promises) {
       if (promise.status === "rejected") {
         console.warn("Failed to generate completions", promise.reason);
-        completions.push(null);
+        setStatus("Failed to generate completions for document sections");
+        setCompletions(null);
+        setAggregateResponse(null);
+        return;
       } else {
         completions.push(promise.value.completion);
       }
     }
+
+    setCompletions(completions);
 
     setStatus("Compiling completions into a single response...");
 
@@ -97,7 +159,7 @@ export default function ArticleSummarizer({
     setAggregateResponse(aggregateResponse);
 
     setStatus("Ready");
-  }, [instruction, markdownChunks, title]);
+  }, [chunks, instruction, chunkEmbeddings, title]);
 
   return (
     <div>
@@ -123,9 +185,33 @@ export default function ArticleSummarizer({
         <>
           <p>Answer</p>
           <pre>{aggregateResponse.trim()}</pre>
-          {/* {completions.map((completion, idx) => (
-            <pre key={idx}>{completion.trim()}</pre>
-          ))} */}
+        </>
+      )}
+      {/* <>
+        {chunks.map((chunk) => (
+          <pre style={{ color: "gold" }}>{chunk}</pre>
+        ))}
+      </> */}
+      {chunkRankings !== null && (
+        <>
+          <p>Chunk rankings</p>
+          <pre>{JSON.stringify(chunkRankings, null, 2)}</pre>
+        </>
+      )}
+      {completions !== null && chunkRankings !== null && (
+        <>
+          <p>Completions</p>
+          {completions.map((completion, i) => (
+            <>
+              <p>
+                Chunk {chunkRankings[i] + 1} / {chunkRankings.length}
+              </p>
+              <pre style={{ color: "green" }}>
+                {chunks[chunkRankings[i]].trim()}
+              </pre>
+              <pre style={{ color: "red" }}>{completion.trim()}</pre>
+            </>
+          ))}
         </>
       )}
       <h1>{title}</h1>

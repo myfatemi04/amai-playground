@@ -8,6 +8,12 @@ export async function getToken(): Promise<string> {
   }
 }
 
+export async function createEmbedding(prompt: string): Promise<number[]> {
+  return await api("generate_embedding", {
+    prompt,
+  }).then((r) => r.embedding);
+}
+
 export async function getSearchResults(query: string): Promise<SearchResults> {
   const { result } = await api("retrieval_enhancement", {
     backend: "bing",
