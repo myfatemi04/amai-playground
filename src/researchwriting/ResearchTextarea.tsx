@@ -5,16 +5,14 @@ import {
   useContext,
   useEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import { api } from "../api";
-import usePrevious from "../usePrevious";
 import { EventLoggingContext } from "./EventLogging";
 import { PageContentCacheContext } from "./PageContentCache";
 import { TextareaContext } from "./TextareaProvider";
 import useCursor from "./useCursor";
 import useScrollHeight from "./useScrollHeight";
-import useSuggestion from "./useSuggestion";
 
 async function continueWithRetrievedPage(
   title: string,
@@ -43,7 +41,9 @@ export default function RWTextArea({
   const [content, setContent] = useState<string>("");
   const cursor = useCursor(ref.current);
   const { request } = useContext(PageContentCacheContext);
-  const { suggestion, status } = useSuggestion(content.slice(0, cursor + 1));
+  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
+
   const textareaStyle: CSSProperties = {
     fontFamily: "sans-serif",
     fontSize: "1rem",
@@ -122,6 +122,29 @@ export default function RWTextArea({
     [draggedUrl, request, content, cursor, logEvent, logError]
   );
 
+  const createSuggestion = useCallback(async () => {
+    const prompt = content.slice(0, cursor + 1);
+
+    setStatus("pending");
+
+    if (prompt.length === 0) {
+      setSuggestion(null);
+      setStatus("idle");
+      return;
+    }
+
+    try {
+      const { completion } = await api("generate_completion", {
+        prompt,
+      });
+      setSuggestion(completion);
+      setStatus("idle");
+    } catch (error) {
+      logError(error);
+      setStatus("error");
+    }
+  }, [content, cursor, logError]);
+
   const scrollbarWidth = ref.current
     ? ref.current.offsetWidth - ref.current.clientWidth
     : 0;
@@ -141,7 +164,7 @@ export default function RWTextArea({
           overflow: "hidden",
         }}
       >
-        {suggestion && !dropping && (
+        {!dropping && (
           <>
             <pre
               style={{
@@ -181,7 +204,7 @@ export default function RWTextArea({
         onChange={(e) => setContent(e.target.value)}
         onKeyDown={(e) => {
           if (
-            e.key === "ArrowRight" &&
+            (e.key === "ArrowRight" || e.key === "Tab") &&
             status === "idle" &&
             suggestion !== null
           ) {
@@ -191,6 +214,12 @@ export default function RWTextArea({
                 suggestion +
                 content.slice(cursor + 1)
             );
+            setSuggestion(null);
+          } else if (e.key === "Enter" && e.ctrlKey) {
+            e.preventDefault();
+            createSuggestion();
+          } else if (e.key === "Escape") {
+            setSuggestion(null);
           }
         }}
       />

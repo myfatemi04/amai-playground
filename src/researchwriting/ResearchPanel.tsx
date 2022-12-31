@@ -3,7 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useState
 } from "react";
 import { api, SearchResults } from "../api";
 import { EventLoggingContext } from "./EventLogging";

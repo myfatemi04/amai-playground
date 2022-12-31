@@ -1,5 +1,4 @@
 import { Readability } from "@mozilla/readability";
-import { api } from "./api";
 
 type Content =
   | {
