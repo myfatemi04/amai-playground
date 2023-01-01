@@ -5,12 +5,14 @@ function Header({ children }: { children: ReactNode }) {
   const { user } = useContext(UserContext);
 
   return (
-    <div
+    <a
       style={{
         display: "flex",
         alignItems: "center",
         marginBottom: "0.5rem",
+        textDecoration: "none",
       }}
+      href="/"
     >
       <img
         src="/logo192.png"
@@ -32,7 +34,7 @@ function Header({ children }: { children: ReactNode }) {
       </span>
       <span style={{ marginLeft: "auto" }} />
       {user ? <span>{user.name}</span> : <span>Not signed in</span>}
-    </div>
+    </a>
   );
 }
 

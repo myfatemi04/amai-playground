@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
 import Header from "../Header";
-import Positioning from "../Positioning";
 import ProfilePane from "../ProfilePane";
 import EventLoggingProvider from "./EventLogging";
 import PageContentCacheProvider from "./PageContentCache";
@@ -49,79 +48,85 @@ export default function ResearchWriting() {
     >
       <EventLoggingProvider>
         <PageContentCacheProvider>
-          <Positioning>
-            <Header>AugmateAI Research Writing</Header>
-            <ProfilePane />
-            {/*
-            minHeight: 0 might not seem to make sense here, but by default, it's minHeight: auto. This causes overflows of the flex box.
-            More info can be found here: https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container
-            
-            flex-grow ensures that the element stretches to the full width (or height) of the enclosing flexbox.
-          */}
-            <div style={{ display: "flex", minHeight: 0, flexGrow: 1 }}>
-              <div
-                style={{
-                  flex: 4,
-                  display: "flex",
-                  flexDirection: "column",
-                  paddingRight: "2rem",
-                }}
-              >
-                <h3 style={{ margin: "0.5rem 0" }}>Writing Panel</h3>
-                <span style={{ fontSize: "0.875rem" }}>
-                  Powered by large language models. See the homepage:{" "}
-                  <a href="https://augmateai.michaelfatemi.com/">AugmateAI</a>
-                  <br />
-                  Developed by Michael Fatemi <br />
-                  <br />
-                  <b>Usage</b>
-                  <ul style={{ marginTop: 0 }}>
-                    <li>
-                      Start typing anything, and suggestions will appear. Press{" "}
-                      <code>tab</code> or <code>right arrow</code> to complete
-                      them.
-                    </li>
-                    <li>
-                      You can incorporate information from outside sources now!
-                      Search something on the side and drag and drop it into the
-                      textbox to create a completion using the source.
-                    </li>
-                  </ul>
-                </span>
+          <div className="black">
+            <div className="centered-column" style={{ height: "100vh" }}>
+              <Header>AugmateAI Research Writing</Header>
+              {/*
+                minHeight: 0 might not seem to make sense here, but by default, it's minHeight: auto. This causes overflows of the flex box.
+                More info can be found here: https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container
+                
+                flex-grow ensures that the element stretches to the full width (or height) of the enclosing flexbox.
+              */}
+              <div style={{ display: "flex", minHeight: 0, flexGrow: 1 }}>
                 <div
-                  style={{ position: "relative", height: "100%", flexGrow: 1 }}
+                  style={{
+                    flex: 4,
+                    display: "flex",
+                    flexDirection: "column",
+                    paddingRight: "2rem",
+                  }}
                 >
-                  <RWTextArea />
+                  <h3 style={{ margin: "0.5rem 0" }}>Writing Panel</h3>
+                  <span style={{ fontSize: "0.875rem" }}>
+                    Powered by large language models. See the homepage:{" "}
+                    <a href="https://augmateai.michaelfatemi.com/">AugmateAI</a>
+                    <br />
+                    Developed by Michael Fatemi <br />
+                    <br />
+                    <b>Usage</b>
+                    <ul style={{ marginTop: 0 }}>
+                      <li>
+                        Start typing anything, and suggestions will appear.
+                        Press <code>tab</code> or <code>right arrow</code> to
+                        complete them.
+                      </li>
+                      <li>
+                        You can incorporate information from outside sources
+                        now! Search something on the side and drag and drop it
+                        into the textbox to create a completion using the
+                        source.
+                      </li>
+                    </ul>
+                  </span>
+                  <div
+                    style={{
+                      position: "relative",
+                      height: "100%",
+                      flexGrow: 1,
+                    }}
+                  >
+                    <RWTextArea />
+                  </div>
+                </div>
+                <div
+                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                >
+                  <RWResearchPanel />
+                </div>
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    paddingLeft: "1rem",
+                    flexGrow: 0,
+                    minWidth: "10rem",
+                  }}
+                >
+                  <p style={{ marginTop: "0.5rem" }}>Pages used</p>
+                  {dropHistory.map((drop) => (
+                    <div key={drop.url} style={{ marginBottom: "0.5rem" }}>
+                      Dropped{" "}
+                      <a href={drop.url} className="dark_a">
+                        {drop.title}
+                      </a>{" "}
+                      ({drop.url})
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div
-                style={{ flex: 1, display: "flex", flexDirection: "column" }}
-              >
-                <RWResearchPanel />
-              </div>
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  paddingLeft: "1rem",
-                  flexGrow: 0,
-                  minWidth: "10rem",
-                }}
-              >
-                <p style={{ marginTop: "0.5rem" }}>Pages used</p>
-                {dropHistory.map((drop) => (
-                  <div key={drop.url} style={{ marginBottom: "0.5rem" }}>
-                    Dropped{" "}
-                    <a href={drop.url} className="dark_a">
-                      {drop.title}
-                    </a>{" "}
-                    ({drop.url})
-                  </div>
-                ))}
-              </div>
             </div>
-          </Positioning>
+          </div>
         </PageContentCacheProvider>
       </EventLoggingProvider>
     </ResearchWritingContext.Provider>

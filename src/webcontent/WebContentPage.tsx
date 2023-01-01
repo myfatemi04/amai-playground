@@ -26,9 +26,8 @@ export default function WebContentPage() {
 
   return (
     <div
+      className="black"
       style={{
-        backgroundColor: "#111111",
-        color: "white",
         padding: "2rem",
         display: "flex",
         flexDirection: "column",

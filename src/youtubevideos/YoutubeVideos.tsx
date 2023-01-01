@@ -67,9 +67,8 @@ export default function YoutubeVideos() {
 
   return (
     <div
+      className="black"
       style={{
-        backgroundColor: "#111111",
-        color: "white",
         padding: "2rem",
         display: "flex",
         flexDirection: "column",

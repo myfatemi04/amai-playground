@@ -16,8 +16,7 @@ export default function ProfilePane() {
         border: "1px solid gray",
         borderRadius: "0.5rem",
         padding: "0.5rem",
-        background: "white",
-        width: "fit-content"
+        width: "fit-content",
       }}
     >
       <span style={{ marginRight: "0.5rem" }}>Logged in as</span>
