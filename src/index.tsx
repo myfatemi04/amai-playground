@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Generation from "./Generation";
 import GoogleCallback from "./GoogleCallback";
 import Home from "./Home";
-import "./index.css";
+import "./index.scss";
 import Interactive from "./interactive/Interactive";
 import NotFound from "./NotFound";
 import PromptDesigner from "./promptdesigner/PromptDesigner";

@@ -24,12 +24,36 @@ pre {
   white-space: pre-wrap;
 }
 
-a,
-a:visited {
+.black {
   color: white;
+  background: #111111;
+  a,
+  a:visited {
+    color: white;
+  }
 }
 
-.dark_a,
-.dark_a:visited {
-  color: rgb(52, 11, 255) !important;
+.white {
+  color: #111111;
+  background: white;
+  a,
+  a:visited {
+    color: rgb(52, 11, 255) !important;
+  }
+}
+
+.centered-column {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  width: calc(min(100vw, max(80vw, 40rem)));
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.article {
+  @extend .centered-column;
+  p {
+    margin: 0.5rem 0;
+  }
 }

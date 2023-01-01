@@ -1,16 +1,19 @@
+import { useContext } from "react";
 import Button from "./Button";
 import Header from "./Header";
+import { UserContext } from "./UserProvider";
 
 export default function Home() {
+  const { user } = useContext(UserContext);
+
   return (
     <div
       style={{
-        backgroundColor: "#111111",
-        color: "white",
-        padding: "2rem",
+        padding: "2rem 2rem 0",
         display: "flex",
         flexDirection: "column",
       }}
+      className="black"
     >
       <Header>AugmateAI</Header>
       <div
@@ -31,108 +34,81 @@ export default function Home() {
         </h1>
         <p>Accelerate yourself with AI.</p>
         <div
-          style={{ display: "flex", marginTop: "3rem", marginBottom: "7rem" }}
+          style={{ display: "flex", marginTop: "3rem", marginBottom: "3rem" }}
         >
-          <Button background={{ from: "#e22", to: "#f22" }} foreground="white">
-            Join
-          </Button>
-          <Button
-            background="#111111"
-            foreground="white"
-            border="0.1rem solid #f22"
-            margin="0 0 0 1rem"
-          >
-            Sign in
-          </Button>
+          {!user ? (
+            <Button
+              background="#111111"
+              foreground="white"
+              border="0.1rem solid #f22"
+              onClick={() => {
+                window.location.href = "/google-auth";
+              }}
+            >
+              Sign in
+            </Button>
+          ) : (
+            <>
+              <Button
+                background="#111111"
+                foreground="white"
+                border="0.1rem solid #f22"
+                onClick={() => {
+                  window.location.href = "/web";
+                }}
+              >
+                AI Reading
+              </Button>
+              <Button
+                background="#111111"
+                foreground="white"
+                border="0.1rem solid #f22"
+                margin="0 0 0 1rem"
+                onClick={() => {
+                  window.location.href = "/researchwriting";
+                }}
+              >
+                AI Writing
+              </Button>
+            </>
+          )}
         </div>
-        {/* <div
-          style={{
-            backgroundColor: "white",
-            padding: "2rem",
-            color: "black",
-            width: "100%",
-          }}
-        >
-          <p>
-            <b>Try it yourself!</b>
-          </p>
-          <input type="text" />
-        </div> */}
-        <h1>Some examples</h1>
-        <ol>
-          <li>
-            <a href="/prompt-examples/rap">
-              Generate (and perform!) a hip-hop rap
-            </a>
-            <a href="/web">
-              Answer questions about scientific papers and external websites (including PDFs)
-            </a>
-          </li>
-        </ol>
+        <span style={{ margin: "2rem 0" }}>
+          Fill out{" "}
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSck6ey9n-hTx1C87m07JTMkK9-KEKNWmQlQYEorkANDnGqKDw/viewform">
+            this form
+          </a>{" "}
+          to {!user && "request access or"} provide feedback
+        </span>
         <div
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
             width: "100%",
-            color: "black",
-            background: "white",
+            padding: "2rem",
           }}
+          className="white"
         >
-          <video width="600" height="400" muted autoPlay loop>
-            <source src="content/AMAIDemo.mp4" type="video/mp4" />
-          </video>
-          <div style={{ lineHeight: "1.5rem" }}>
-            Available on the{" "}
-            <a
-              target="_blank"
-              rel="noreferrer"
-              href="https://chrome.google.com/webstore/detail/augmate-ai/dceioblamkhclhgcmelaakbjeedpmhnf"
-            >
-              Chrome WebStore
-            </a>
-            .
-            <br />
-            <span>
-              Fill out{" "}
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSck6ey9n-hTx1C87m07JTMkK9-KEKNWmQlQYEorkANDnGqKDw/viewform">
-                this form
-              </a>{" "}
-              to request access.
-            </span>
-            <br />
-            <span style={{ fontSize: "0.5rem" }}>
-              Google Docs compatibility coming soon!
-            </span>
+          <div className="article">
+            <h1>Some examples</h1>
+            <h2>Answer Questions</h2>
+            <p>
+              Having trouble reading a dense scientific paper or textbook? Paste
+              the link to the website (or PDF) and have GPT-3 answer questions
+              about it with my <a href="/web">research tool</a>.
+            </p>
+            <p>
+              You can also do it for YouTube videos at{" "}
+              <a href="/youtube">this page</a>.
+            </p>
+            <h2>Write Faster</h2>
+            <p>
+              Write faster with my <a href="/researchwriting">writing tool</a>.
+              If you want to write something informative, but you don't think
+              GPT-3 will get the answer right, you can search for an article
+              that might have the answer, <b>drag and drop</b> it into your
+              document, and have GPT-3 use that article as a reference to write
+              the answer.
+            </p>
           </div>
-          <a href="/generation" target="_blank" rel="noreferrer">
-            Try it yourself!
-          </a>
-          <br />
-          <b>Give any instruction</b>
-          <span style={{ fontSize: "0.5rem" }}>
-            Note: Only works for news articles right now, such as Seeking Alpha
-            and Substack.
-          </span>
-          <img
-            src="content/AMAISS5.png"
-            alt="Give any instruction"
-            style={{ maxWidth: "40rem" }}
-          />
-          <br />
-          <img
-            src="content/AMAISS1.png"
-            alt="Generate emails and LinkedIn messages"
-            style={{ maxWidth: "40rem" }}
-          />
-          <span>
-            <b>Summarize Long Articles</b>
-          </span>
-          <img
-            src="content/AMAISS4.png"
-            alt="Summarize long articles"
-            style={{ maxWidth: "40rem" }}
-          />
         </div>
       </div>
     </div>
