@@ -4,8 +4,9 @@ import useLocalStorage from "./useLocalStorage";
 
 const googleOauthUrlDev =
   "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=817387003389-56di08pe33jf169cpcpa4u9c2gg5ac6q.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fgoogle-callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&state=edyYKCX24zRiil9me0VvUkz7Y3jMva&access_type=offline&include_granted_scopes=true";
+const hostname = window.location.hostname;
 const googleOauthUrlProduction =
-  "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=817387003389-56di08pe33jf169cpcpa4u9c2gg5ac6q.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Faugmateai.michaelfatemi.com%2Fgoogle-callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&state=U1XShs6GvYkf6wehyd4lfynA4tDrcH&access_type=offline&include_granted_scopes=true";
+  `https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=817387003389-56di08pe33jf169cpcpa4u9c2gg5ac6q.apps.googleusercontent.com&redirect_uri=https%3A%2F%2F${hostname}%2Fgoogle-callback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&state=U1XShs6GvYkf6wehyd4lfynA4tDrcH&access_type=offline&include_granted_scopes=true`;
 
 export const googleOauthUrl =
   window.location.hostname === "localhost"
