@@ -135,8 +135,11 @@ export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
     }
 
     try {
-      const { completion } = await api("generate_completion", {
-        prompt,
+      const { completion } = await api("generate_for_prompt", {
+        prompt_id: "63bf39f45117bd92a289699f",
+        variables: {
+          context: prompt,
+        }
       });
       setSuggestion(completion);
       setStatus("idle");
