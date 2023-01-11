@@ -1,5 +1,6 @@
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import AccountPage from "./accountpage/AccountPage";
 import Generation from "./Generation";
 import GoogleCallback from "./GoogleCallback";
 import Home from "./Home";
@@ -113,6 +114,14 @@ root.render(
             element={
               <RequireAuth>
                 <Interactive />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="account"
+            element={
+              <RequireAuth>
+                <AccountPage />
               </RequireAuth>
             }
           />
