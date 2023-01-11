@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { getPage } from "../api";
 import Button from "../Button";
-import Header from "../Header";
+import DefaultLayout from "../DefaultLayout";
 import LongformPromptAnswering from "../LongformPromptAnswering";
 
 export default function WebContentPage() {
@@ -25,18 +25,8 @@ export default function WebContentPage() {
   }, [url]);
 
   return (
-    <div
-      className="black"
-      style={{
-        padding: "2rem",
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        boxSizing: "border-box",
-        overflowY: "auto",
-      }}
-    >
-      <Header>Research AI</Header>
+    <DefaultLayout>
+      <h1>Research AI∏</h1>
       <p>
         This is a tool to help answer questions about research papers. It
         supports PDFs (which means ArXiV) and HTML pages. For HTML, it attempts
@@ -85,6 +75,6 @@ export default function WebContentPage() {
           title={article.title}
         />
       )}
-    </div>
+    </DefaultLayout>
   );
 }

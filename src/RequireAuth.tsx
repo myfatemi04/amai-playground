@@ -1,6 +1,6 @@
 import { ReactNode, useContext } from "react";
+import DefaultLayout from "./DefaultLayout";
 import GoogleLoginButton from "./GoogleLoginButton";
-import Header from "./Header";
 import { UserContext } from "./UserProvider";
 
 export default function RequireAuth({ children }: { children: ReactNode }) {
@@ -11,20 +11,9 @@ export default function RequireAuth({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        inset: 0,
-        padding: "4rem",
-      }}
-    >
-      <Header>AugmateAI</Header>
+    <DefaultLayout>
       <p>This page requires a log in.</p>
-      {pending && <p>Logging you in...</p>}
-      {!pending && <GoogleLoginButton />}
-    </div>
+      {pending ? <p>Logging you in...</p> : <GoogleLoginButton />}
+    </DefaultLayout>
   );
 }

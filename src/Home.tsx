@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import Button from "./Button";
+import Footer from "./Footer";
 import Header from "./Header";
 import { UserContext } from "./UserProvider";
 
@@ -7,22 +8,16 @@ export default function Home() {
   const { user } = useContext(UserContext);
 
   return (
-    <div
-      style={{
-        padding: "2rem 2rem 0",
-        display: "flex",
-        flexDirection: "column",
-      }}
-      className="black"
-    >
-      <Header>AugmateAI</Header>
+    <>
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}
+        className="black"
       >
+        <Header>AugmateAI</Header>
         <h1
           style={{
             textAlign: "center",
@@ -83,7 +78,7 @@ export default function Home() {
         <div
           style={{
             width: "100%",
-            padding: "2rem",
+            height: "100%",
           }}
           className="white"
         >
@@ -111,6 +106,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

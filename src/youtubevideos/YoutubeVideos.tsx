@@ -4,6 +4,7 @@ import Button from "../Button";
 import Header from "../Header";
 import LongformPromptAnswering from "../LongformPromptAnswering";
 import Youtube from "react-youtube";
+import DefaultLayout from "../DefaultLayout";
 
 function numberToTimestamp(number: number) {
   const hours = Math.floor(number / 3600);
@@ -66,19 +67,8 @@ export default function YoutubeVideos() {
   }, [url]);
 
   return (
-    <div
-      className="black"
-      style={{
-        padding: "2rem",
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        boxSizing: "border-box",
-        overflowY: "auto",
-      }}
-    >
-      <Header>Research AI</Header>
-      <p>Analyze a Youtube video</p>
+    <DefaultLayout>
+      <h1>Youtube Analyzer</h1>
       <div style={{ display: "flex", width: "100%" }}>
         <input
           type="text"
@@ -112,6 +102,6 @@ export default function YoutubeVideos() {
             )}
           </>
         ))}
-    </div>
+    </DefaultLayout>
   );
 }
