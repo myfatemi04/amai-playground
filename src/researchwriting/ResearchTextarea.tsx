@@ -36,8 +36,6 @@ export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
 
-  console.log({ cursor });
-
   const textareaStyle: CSSProperties = {
     fontFamily: "sans-serif",
     fontSize: "1rem",

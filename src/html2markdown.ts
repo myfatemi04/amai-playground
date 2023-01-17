@@ -34,6 +34,14 @@ type Content =
   | {
       type: "paragraph";
       children: Content[];
+    }
+  | {
+      type: "list";
+      children: Content[];
+    }
+  | {
+      type: "listitem";
+      children: Content[];
     };
 
 function nodeToJson(node: Node, withinPre = false) {
@@ -98,6 +106,22 @@ function nodeToJson(node: Node, withinPre = false) {
             break;
           }
         }
+        case "UL": {
+          const childContent = nodeToJson(child);
+          content.push({
+            type: "list",
+            children: childContent,
+          });
+          break;
+        }
+        case "LI": {
+          const childContent = nodeToJson(child);
+          content.push({
+            type: "listitem",
+            children: childContent,
+          });
+          break;
+        }
         case "PRE": {
           const childContent = nodeToJson(child, true);
           // @ts-ignore
@@ -148,7 +172,7 @@ function escapeForMarkdown(text: string) {
 }
 
 export function jsonToMarkdown(
-  json: any,
+  json: Content[],
   options: { ignoreLinks: boolean; ignoreImages: boolean }
 ) {
   const content: string[] = [];
@@ -200,10 +224,21 @@ export function jsonToMarkdown(
       case "paragraph":
         content.push(`\n${jsonToMarkdown(child.children, options)}\n`);
         break;
-      default: {
-        console.error("Unknown type", child.type, child);
+      case "list":
+        content.push(
+          `\n${jsonToMarkdown(
+            child.children.filter((child) => child.type === "listitem"),
+            options
+          )
+            .split("\n")
+            .filter((x) => Boolean(x.trim()))
+            .map((line) => `* ${line}`)
+            .join("\n")}\n`
+        );
         break;
-      }
+      case "listitem":
+        content.push(`\n${jsonToMarkdown(child.children, options)}\n`);
+        break;
     }
   }
   return content.join("");
@@ -213,11 +248,19 @@ export function htmlToJson(html: string) {
   return nodeToJson(htmlToDocument(html).body);
 }
 
+export function cleanMarkdown(markdown: string) {
+  return markdown
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .trim();
+}
+
 export function htmlToMarkdown(
   html: string,
   options: { ignoreLinks: boolean; ignoreImages: boolean }
 ) {
-  return jsonToMarkdown(htmlToJson(html), options);
+  return cleanMarkdown(jsonToMarkdown(htmlToJson(html), options));
 }
 
 function htmlToDocument(html: string) {
@@ -229,13 +272,3 @@ export function getMainArticle(html: string) {
   const result = readability.parse();
   return result ? { content: result.content, title: result.title } : null;
 }
-
-// async function main() {
-//   const url =
-//     "https://www.ducksters.com/science/physics/resistors_in_series_and_parallel.php";
-//   const jsdom = await JSDOM.fromURL(url);
-//   const readability = new Readability(jsdom.window.document, { debug: false });
-//   const result = readability.parse();
-//   const json = htmlToJson(result.content);
-//   const markdown = jsonToMarkdown(json);
-// }

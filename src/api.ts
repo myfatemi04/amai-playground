@@ -48,9 +48,11 @@ async function getPageHelper(url: string) {
   return result as { content: string; type: "html" | "text-from-pdf" | "s3" };
 }
 
-export async function getPage(
-  url: string
-): Promise<{ content: string; title: string } | null> {
+export async function getPage(url: string): Promise<{
+  content: string;
+  title: string;
+  type: "text/plain" | "text/html";
+} | null> {
   let { content, type } = await getPageHelper(url);
   if (type === "s3") {
     const path = content;
@@ -64,12 +66,10 @@ export async function getPage(
     const result = getMainArticle(content);
     if (result) {
       return {
-        content: htmlToMarkdown(result.content, {
-          ignoreImages: true,
-          ignoreLinks: true,
-        }),
+        content: result.content,
         title: result.title,
-      };
+        type: "text/html",
+      } as const;
     } else {
       return null;
     }
@@ -77,6 +77,7 @@ export async function getPage(
     return {
       content,
       title: "[PDF]",
+      type: "text/plain",
     };
   } else {
     throw new Error("Unknown type: " + type);

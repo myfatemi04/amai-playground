@@ -5,6 +5,7 @@ type ParsedPageInformation = {
   url: string;
   title: string;
   content: string;
+  type: "text/html" | "text/plain";
 };
 
 export const PageContentCacheContext = createContext({
