@@ -1,24 +1,23 @@
 import { useCallback, useContext, useMemo, useState } from "react";
 import { getSearchResults, Page, SearchResults } from "../api";
 import { EventLoggingContext } from "./EventLogging";
+import { PageContentCacheContext } from "./PageContentCache";
 import Reader from "./Reader";
 import ResearchWritingContext from "./ResearchWritingContext";
 
-function Source({ source }: { source: Page }) {
+export function Source({ source }: { source: Page }) {
   const { pages, setPages, setReadingUrl } = useContext(ResearchWritingContext);
   const exists = pages.some((page) => page.url === source.url);
 
   return (
     <div key={source.url} style={{ padding: "0 0 1rem" }}>
-      <a
-        href={source.url}
-        target="_blank"
-        rel="noreferrer"
-        className="dark_a"
+      <button
+        className="link"
         style={{ fontWeight: "bold" }}
+        onClick={() => setReadingUrl(source.url)}
       >
         {source.title}
-      </a>
+      </button>
       <p>{source.snippet}</p>
       <div style={{ display: "flex" }}>
         {/* Add or remove button */}
@@ -44,13 +43,19 @@ function Source({ source }: { source: Page }) {
           </button>
         )}
         {/* Read button */}
-        <button
-          className="link"
-          style={{ marginLeft: "0.5rem" }}
-          onClick={() => setReadingUrl(source.url)}
+        <a
+          href={source.url}
+          target="_blank"
+          rel="noreferrer"
+          className="dark_a"
+          style={{
+            fontWeight: "normal",
+            textDecoration: "none",
+            marginLeft: "0.5rem",
+          }}
         >
-          Read
-        </button>
+          Open in new tab
+        </a>
       </div>
     </div>
   );
@@ -72,11 +77,12 @@ export default function RWResearchPanel() {
     "idle" | "pending" | "errored"
   >("idle");
   const { logError } = useContext(EventLoggingContext);
-  const { pages, readingUrl, setReadingUrl } = useContext(
+  const { pages, readingUrl, setReadingUrl, setPages } = useContext(
     ResearchWritingContext
   );
 
   const isUrl_ = useMemo(() => isUrl(searchQuery), [searchQuery]);
+  const { request } = useContext(PageContentCacheContext);
 
   const search = useCallback(async () => {
     if (!searchQuery.trim()) {
@@ -139,7 +145,28 @@ export default function RWResearchPanel() {
         {isUrl_ ? (
           <button
             style={{ marginLeft: "0.5rem" }}
-            onClick={alert}
+            onClick={async () => {
+              setSearchStatus("pending");
+              try {
+                const page = await request(searchQuery);
+                if (!page) {
+                  alert("Couldn't load page.");
+                  return;
+                }
+                setPages((pages) => [
+                  ...pages,
+                  {
+                    url: page.url,
+                    title: page.title,
+                    snippet: "Directly uploaded",
+                  },
+                ]);
+                setSearchStatus("idle");
+              } catch (e) {
+                logError(e);
+                setSearchStatus("errored");
+              }
+            }}
             disabled={searchStatus === "pending"}
           >
             Add URL

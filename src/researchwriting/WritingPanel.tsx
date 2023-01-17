@@ -62,7 +62,6 @@ export default function RWWritingPanel() {
       <div
         style={{
           position: "relative",
-          height: "100%",
           flexGrow: 1,
         }}
       >

@@ -46,8 +46,8 @@ function ReaderInner({ page }: any) {
             flex: 2,
             display: "flex",
             flexDirection: "column",
-            overflowY: "auto",
             padding: "1rem",
+            overflowY: "auto",
           }}
         >
           <ReactMarkdown children={markdown!} />
