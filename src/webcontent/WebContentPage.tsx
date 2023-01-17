@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { getPage } from "../api";
 import Button from "../Button";
 import DefaultLayout from "../DefaultLayout";
+import { htmlToMarkdown } from "../html2markdown";
 import LongformPromptAnswering from "../LongformPromptAnswering";
 
 export default function WebContentPage() {
@@ -12,6 +13,15 @@ export default function WebContentPage() {
   } | null>(null);
   const [articlePrefixText, setArticlePrefixText] =
     useState("No article loaded");
+
+  const md = useMemo(() => {
+    return article?.content
+      ? htmlToMarkdown(article.content, {
+          ignoreImages: true,
+          ignoreLinks: true,
+        })
+      : null;
+  }, [article]);
 
   const loadContentForPage = useCallback(async () => {
     try {
@@ -26,7 +36,7 @@ export default function WebContentPage() {
 
   return (
     <DefaultLayout>
-      <h1>Research AI∏</h1>
+      <h1>Research AI</h1>
       <p>
         This is a tool to help answer questions about research papers. It
         supports PDFs (which means ArXiV) and HTML pages. For HTML, it attempts
@@ -71,7 +81,7 @@ export default function WebContentPage() {
       <p>{articlePrefixText}</p>
       {article && (
         <LongformPromptAnswering
-          markdown={article.content ?? "(null)"}
+          markdown={md ?? "(null)"}
           title={article.title}
         />
       )}

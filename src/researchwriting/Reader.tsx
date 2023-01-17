@@ -1,23 +1,66 @@
 import { useContext, useMemo } from "react";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { htmlToMarkdown } from "../html2markdown";
+import { chunkify } from "../long";
 import { PageContentCacheContext } from "./PageContentCache";
+
+function ReaderInner({ page }: any) {
+  const markdown = useMemo(() => {
+    return htmlToMarkdown(page.content, {
+      ignoreImages: true,
+      ignoreLinks: true,
+    });
+  }, [page]);
+
+  const chunks = useMemo(() => {
+    return chunkify(markdown);
+  }, [markdown]);
+
+  return (
+    <>
+      <h3>{page.title}</h3>
+      <p>
+        <a href={page.url} target="_blank" rel="noreferrer">
+          {page.url}
+        </a>
+      </p>
+      <div style={{ display: "flex", flexGrow: 1, minHeight: 0 }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            padding: "1rem",
+            overflowY: "auto",
+          }}
+        >
+          <h3>Summary</h3>
+          {chunks.map((chunk: any, i: number) => (
+            <div key={i}>
+              <pre style={{ whiteSpace: "pre-wrap" }}>{chunk}</pre>
+            </div>
+          ))}
+        </div>
+        <div
+          style={{
+            flex: 2,
+            display: "flex",
+            flexDirection: "column",
+            overflowY: "auto",
+            padding: "1rem",
+          }}
+        >
+          <ReactMarkdown children={markdown!} />
+        </div>
+      </div>
+    </>
+  );
+}
 
 export default function Reader({ url }: { url: string }) {
   const { request, urls } = useContext(PageContentCacheContext);
 
   const page = urls[url]!;
-
-  const markdown = useMemo(() => {
-    if (page) {
-      return htmlToMarkdown(page.content, {
-        ignoreImages: true,
-        ignoreLinks: true,
-      });
-    } else {
-      return null;
-    }
-  }, [page]);
 
   if (urls[url] === undefined) {
     request(url);
@@ -36,13 +79,5 @@ export default function Reader({ url }: { url: string }) {
     );
   }
 
-  return (
-    <>
-      <h3>{page.title}</h3>
-      <a href={url} target="_blank" rel="noreferrer">
-        {url}
-      </a>
-      <ReactMarkdown children={markdown!} />
-    </>
-  );
+  return <ReaderInner page={page} />;
 }

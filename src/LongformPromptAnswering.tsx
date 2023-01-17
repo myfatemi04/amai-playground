@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { api, createEmbedding } from "./api";
 import Button from "./Button";
-import chunkText from "./chunkText";
+import { chunkify } from "./long";
 import { rateDocumentEmbeddingsForQueryEmbedding } from "./rateDocumentsForQuery";
 
 async function createAggregateResponse(
@@ -20,7 +20,7 @@ async function createAggregateResponse(
   return completion;
 }
 
-const _dev_ = window.location.hostname === "localhost";
+const _dev_ = false; // window.location.hostname === "localhost";
 
 export default function LongformPromptAnswering({
   markdown,
@@ -39,23 +39,7 @@ export default function LongformPromptAnswering({
   );
   const [status, setStatus] = useState("Ready");
 
-  const chunks = useMemo(() => {
-    const paragraphs = markdown.split("\n\n");
-    const filteredParagraphs = [];
-    for (let paragraph of paragraphs) {
-      paragraph = paragraph.trim();
-      if (paragraph.toLowerCase() === "references") {
-        break;
-      }
-      if (paragraph.length > 10) {
-        filteredParagraphs.push(paragraph);
-      }
-    }
-
-    console.log({ filteredParagraphs });
-
-    return chunkText(filteredParagraphs.join("\n\n"), 2048, 4096);
-  }, [markdown]);
+  const chunks = useMemo(() => chunkify(markdown), [markdown]);
   const [chunkEmbeddings, setChunkEmbeddings] = useState<number[][] | null>(
     null
   );

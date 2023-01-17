@@ -105,7 +105,14 @@ export default function RWResearchPanel() {
         >
           Back to list
         </button>
-        <div style={{ flexGrow: 1, overflowY: "auto" }}>
+        <div
+          style={{
+            flexGrow: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <Reader url={readingUrl} />
         </div>
       </>

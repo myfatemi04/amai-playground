@@ -1,4 +1,4 @@
-import { getMainArticle, htmlToMarkdown } from "./html2markdown";
+import { getMainArticle } from "./html2markdown";
 
 export async function getToken(): Promise<string> {
   if (window.location.pathname === "/researchwriting") {
@@ -12,6 +12,21 @@ export async function createEmbedding(prompt: string): Promise<number[]> {
   return await api("generate_embedding", {
     prompt,
   }).then((r) => r.embedding);
+}
+
+export async function createEmbeddingBatch(strings: string[]) {
+  const promises = await Promise.allSettled(strings.map(createEmbedding));
+  const embeddings: number[][] = [];
+
+  for (const promise of promises) {
+    if (promise.status === "rejected") {
+      throw new Error("Failed to generate embeddings", promise.reason);
+    } else {
+      embeddings.push(promise.value);
+    }
+  }
+
+  return embeddings;
 }
 
 export async function getSearchResults(query: string): Promise<SearchResults> {
