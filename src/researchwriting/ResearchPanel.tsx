@@ -1,91 +1,193 @@
-import {
-  MouseEventHandler,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { getSearchResults, SearchResults } from "../api";
+import { useCallback, useContext, useMemo, useState } from "react";
+import { getSearchResults, Page, SearchResults } from "../api";
 import { EventLoggingContext } from "./EventLogging";
+import Reader from "./Reader";
 import ResearchWritingContext from "./ResearchWritingContext";
-import { TextareaContext } from "./TextareaProvider";
 
-const SEARCH_TIMEOUT_MS = 2000;
+function Source({ source }: { source: Page }) {
+  const { pages, setPages, setReadingUrl } = useContext(ResearchWritingContext);
+  const exists = pages.some((page) => page.url === source.url);
+
+  return (
+    <div key={source.url} style={{ padding: "0 0 1rem" }}>
+      <a
+        href={source.url}
+        target="_blank"
+        rel="noreferrer"
+        className="dark_a"
+        style={{ fontWeight: "bold" }}
+      >
+        {source.title}
+      </a>
+      <p>{source.snippet}</p>
+      <div style={{ display: "flex" }}>
+        {/* Add or remove button */}
+        {!exists ? (
+          <button
+            className="link"
+            onClick={() => {
+              setPages((pages) => [...pages, source]);
+            }}
+          >
+            Add
+          </button>
+        ) : (
+          <button
+            className="link"
+            onClick={() => {
+              setPages((pages) =>
+                pages.filter((page) => page.url !== source.url)
+              );
+            }}
+          >
+            Remove
+          </button>
+        )}
+        {/* Read button */}
+        <button
+          className="link"
+          style={{ marginLeft: "0.5rem" }}
+          onClick={() => setReadingUrl(source.url)}
+        >
+          Read
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function isUrl(maybeUrl: string) {
+  try {
+    new URL(maybeUrl);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export default function RWResearchPanel() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResults>();
-  const [status, setStatus] = useState<"idle" | "pending" | "errored">("idle");
-  const { logEvent, logError } = useContext(EventLoggingContext);
-  const { content } = useContext(TextareaContext);
-  const { setDraggedUrl } = useContext(ResearchWritingContext);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResults>();
+  const [searchStatus, setSearchStatus] = useState<
+    "idle" | "pending" | "errored"
+  >("idle");
+  const { logError } = useContext(EventLoggingContext);
+  const { pages, readingUrl, setReadingUrl } = useContext(
+    ResearchWritingContext
+  );
 
-  useEffect(() => {
-    if (!query.trim()) {
+  const isUrl_ = useMemo(() => isUrl(searchQuery), [searchQuery]);
+
+  const search = useCallback(async () => {
+    if (!searchQuery.trim()) {
       return;
     }
-    const timeout = setTimeout(async () => {
-      setStatus("pending");
-      try {
-        logEvent({ type: "search", query, content });
-        setResults(await getSearchResults(query));
-        setStatus("idle");
-      } catch (e) {
-        logError(e);
-        setStatus("errored");
-      }
-    }, SEARCH_TIMEOUT_MS);
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [logEvent, query, content, logError]);
+    setSearchStatus("pending");
+    try {
+      setSearchResults(await getSearchResults(searchQuery));
+      setSearchStatus("idle");
+    } catch (e) {
+      logError(e);
+      setSearchStatus("errored");
+    }
+  }, [searchQuery, logError]);
 
-  const onDragEnd: MouseEventHandler = useCallback(
-    (e) => e.preventDefault(),
-    []
-  );
+  if (readingUrl != null) {
+    return (
+      <>
+        <h3 style={{ margin: "0.5rem 0" }}>Reader</h3>
+        <button
+          onClick={() => {
+            setReadingUrl(null);
+          }}
+          className="link"
+          style={{ marginBottom: "1rem" }}
+        >
+          Back to list
+        </button>
+        <div style={{ flexGrow: 1, overflowY: "auto" }}>
+          <Reader url={readingUrl} />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
-      <h3 style={{ margin: "0.5rem 0" }}>Research Panel</h3>
-      <input
-        type="text"
-        onChange={(e) => setQuery(e.target.value)}
-        value={query}
-      />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          overflowY: "auto",
-          paddingRight: "1rem",
-          margin: "1rem 0",
-          boxSizing: "border-box",
-          userSelect: "none",
-        }}
-      >
-        {results?.pages.map((result) => (
-          <div
-            key={result.url}
-            style={{ cursor: "pointer" }}
-            onDragStart={() => setDraggedUrl(result.url)}
-            onDragEnd={onDragEnd}
-            draggable
+      <h3 style={{ margin: "0.5rem 0" }}>Sources</h3>
+      <div style={{ display: "flex", margin: "0.5rem 0" }}>
+        <input
+          type="text"
+          onChange={(e) => setSearchQuery(e.target.value)}
+          value={searchQuery}
+          style={{ flexGrow: 1 }}
+          onKeyUp={(e) => {
+            if (e.key === "Enter") {
+              search();
+            }
+          }}
+          disabled={searchStatus === "pending"}
+          placeholder="Search or enter a URL"
+        />
+        {isUrl_ ? (
+          <button
+            style={{ marginLeft: "0.5rem" }}
+            onClick={alert}
+            disabled={searchStatus === "pending"}
           >
-            <a
-              href={result.url}
-              target="_blank"
-              rel="noreferrer"
-              className="dark_a"
-              style={{ fontWeight: "bold" }}
-            >
-              {result.title}
-            </a>
-            <p>{result.snippet}</p>
-          </div>
-        ))}
+            Add URL
+          </button>
+        ) : (
+          <button
+            style={{ marginLeft: "0.5rem" }}
+            onClick={search}
+            disabled={searchStatus === "pending"}
+          >
+            Search
+          </button>
+        )}
       </div>
+      {searchResults ? (
+        <>
+          <p>
+            <b>Results</b>
+          </p>
+          <button
+            onClick={() => {
+              setSearchResults(undefined);
+              setSearchQuery("");
+            }}
+            className="link"
+            style={{ marginBottom: "1rem" }}
+          >
+            Back to list
+          </button>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              flexGrow: 1,
+              overflowY: "auto",
+              boxSizing: "border-box",
+            }}
+          >
+            {searchResults?.pages.map((result) => (
+              <Source source={result} key={result.url} />
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <p>
+            <b>Sources</b>
+          </p>
+          {pages.length > 0 ? (
+            pages.map((page) => <Source source={page} key={page.url} />)
+          ) : (
+            <p>No sources yet</p>
+          )}
+        </>
+      )}
     </>
   );
 }

@@ -1,20 +1,18 @@
 import {
   CSSProperties,
-  MouseEventHandler,
   useCallback,
   useContext,
   useEffect,
   useRef,
-  useState
+  useState,
 } from "react";
 import { api } from "../api";
 import { EventLoggingContext } from "./EventLogging";
-import { PageContentCacheContext } from "./PageContentCache";
-import ResearchWritingContext from "./ResearchWritingContext";
 import { TextareaContext } from "./TextareaProvider";
 import useCursor from "./useCursor";
 import useScrollHeight from "./useScrollHeight";
 
+// eslint-disable-next-line
 async function continueWithRetrievedPage(
   title: string,
   content: string,
@@ -35,10 +33,10 @@ export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const [content, setContent] = useState<string>("");
   const cursor = useCursor(ref.current);
-  const { request } = useContext(PageContentCacheContext);
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
-  const { draggedUrl, setDropHistory } = useContext(ResearchWritingContext);
+
+  console.log({ cursor });
 
   const textareaStyle: CSSProperties = {
     fontFamily: "sans-serif",
@@ -52,76 +50,66 @@ export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
     border: "1px solid black",
     ...(style || {}),
   };
-  const [dropping, setDropping] = useState(false);
   const { setContent: publishContent, setCursor: publishCursor } =
     useContext(TextareaContext);
-  const { logEvent, logError } = useContext(EventLoggingContext);
+  const { logError } = useContext(EventLoggingContext);
 
   // Publish cursor and content to the context
   useEffect(() => publishContent(content), [content, publishContent]);
   useEffect(() => publishCursor(cursor), [cursor, publishCursor]);
 
-  useEffect(() => setDropping(false), [draggedUrl]);
+  // const onDrop: MouseEventHandler = useCallback(
+  //   (e) => {
+  //     e.preventDefault();
+  //     async function run() {
+  //       if (draggedUrl === null) {
+  //         console.warn("onDrop called, but draggedUrl is null");
+  //         return;
+  //       }
+  //       setDropping(true);
+  //       const draggedUrlContent = await request(draggedUrl);
+  //       if (draggedUrlContent === null) {
+  //         console.warn("onDrop called, but content is null");
+  //         return;
+  //       }
+  //       setDropHistory((history) => [
+  //         ...history,
+  //         { url: draggedUrl, title: draggedUrlContent.title },
+  //       ]);
+  //       try {
+  //         const continuation = await continueWithRetrievedPage(
+  //           draggedUrlContent.title,
+  //           draggedUrlContent.content,
+  //           content.slice(0, cursor + 1)
+  //         );
+  //         const text =
+  //           content.slice(0, cursor + 1) +
+  //           continuation +
+  //           content.slice(cursor + 1);
+  //         logEvent({
+  //           type: "drag",
+  //           url: draggedUrl,
+  //           title: draggedUrlContent.title,
+  //           snippet: draggedUrlContent.content,
+  //           content,
+  //           cursor,
+  //         });
+  //         setContent(text);
+  //         ref.current!.focus();
+  //         ref.current!.setSelectionRange(
+  //           cursor + continuation.length,
+  //           cursor + continuation.length
+  //         );
+  //       } catch (e) {
+  //         logError(e);
+  //       }
+  //       setDropping(false);
+  //     }
 
-  useEffect(() => {
-    if (draggedUrl !== null) {
-      request(draggedUrl);
-    }
-  }, [draggedUrl, request]);
-
-  const onDrop: MouseEventHandler = useCallback(
-    (e) => {
-      e.preventDefault();
-      async function run() {
-        if (draggedUrl === null) {
-          console.warn("onDrop called, but draggedUrl is null");
-          return;
-        }
-        setDropping(true);
-        const draggedUrlContent = await request(draggedUrl);
-        if (draggedUrlContent === null) {
-          console.warn("onDrop called, but content is null");
-          return;
-        }
-        console.log(draggedUrlContent);
-        setDropHistory((history) => [
-          ...history,
-          { url: draggedUrl, title: draggedUrlContent.title },
-        ]);
-        try {
-          const continuation = await continueWithRetrievedPage(
-            draggedUrlContent.title,
-            draggedUrlContent.content,
-            content.slice(0, cursor + 1)
-          );
-          const text =
-            content.slice(0, cursor + 1) +
-            continuation +
-            content.slice(cursor + 1);
-          logEvent({
-            type: "drag",
-            url: draggedUrl,
-            title: draggedUrlContent.title,
-            snippet: draggedUrlContent.content,
-            content,
-            cursor,
-          });
-          setContent(text);
-          ref.current!.focus();
-          ref.current!.setSelectionRange(
-            cursor + continuation.length,
-            cursor + continuation.length
-          );
-        } catch (e) {
-          logError(e);
-        }
-        setDropping(false);
-      }
-
-      run();
-    },
-    [draggedUrl, request, setDropHistory, content, cursor, logEvent, logError]
-  );
+  //     run();
+  //   },
+  //   [draggedUrl, request, setDropHistory, content, cursor, logEvent, logError]
+  // );
 
   const createSuggestion = useCallback(async () => {
     const prompt = content.slice(0, cursor + 1);
@@ -139,7 +127,7 @@ export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
         prompt_id: "63bf39f45117bd92a289699f",
         variables: {
           context: prompt,
-        }
+        },
       });
       setSuggestion(completion);
       setStatus("idle");
@@ -168,33 +156,29 @@ export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
           overflow: "hidden",
         }}
       >
-        {!dropping && (
-          <>
-            <pre
-              style={{
-                visibility: "hidden",
-                margin: 0,
-                fontFamily: textareaStyle.fontFamily,
-                display: "inline",
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {content.slice(0, cursor)}
-            </pre>
-            <pre
-              style={{
-                color: "grey",
-                fontStyle: "italic",
-                margin: 0,
-                fontFamily: textareaStyle.fontFamily,
-                display: "inline",
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {suggestion || (suggestion !== null && "(no suggestion)")}
-            </pre>
-          </>
-        )}
+        <pre
+          style={{
+            visibility: "hidden",
+            margin: 0,
+            fontFamily: textareaStyle.fontFamily,
+            display: "inline",
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          {content.slice(0, cursor)}
+        </pre>
+        <pre
+          style={{
+            color: "grey",
+            fontStyle: "italic",
+            margin: 0,
+            fontFamily: textareaStyle.fontFamily,
+            display: "inline",
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          {suggestion || (suggestion !== null && "(no suggestion)")}
+        </pre>
       </div>
       <textarea
         ref={ref}
@@ -202,9 +186,6 @@ export default function RWTextArea({ style = {} }: { style?: CSSProperties }) {
         rows={40}
         cols={80}
         style={textareaStyle}
-        // Allow dragover event
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={onDrop}
         onChange={(e) => setContent(e.target.value)}
         onKeyDown={(e) => {
           if (

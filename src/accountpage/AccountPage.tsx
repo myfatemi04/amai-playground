@@ -1,19 +1,27 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
+import { api } from "../api";
 import DefaultLayout from "../DefaultLayout";
 import { UserContext } from "../UserProvider";
 
 export default function AccountPage() {
   const user = useContext(UserContext).user!;
 
+  const [results, setResults] = useState<any | null>(null);
+
+  useEffect(() => {
+    api("list_usage", {collection: "retrieval_enhancement_usage"}).then(setResults);
+  }, []);
+
   return (
     <DefaultLayout>
-      <h1>My Account</h1>
-      <p>
+      <h1>Profile</h1>
+      <p style={{ lineHeight: "2rem" }}>
         <b>Name</b> {user.name}
-      </p>
-      <p>
+        <br />
         <b>Email</b> {user.email}
       </p>
+      <h1>Usage History</h1>
+      <pre>{JSON.stringify(results)}</pre>
     </DefaultLayout>
   );
 }

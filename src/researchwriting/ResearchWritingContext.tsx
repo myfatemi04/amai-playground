@@ -1,15 +1,11 @@
 import { createContext, SetStateAction } from "react";
-
-type DropHistory = {
-  url: string;
-  title: string;
-};
+import { Page } from "../api";
 
 const ResearchWritingContext = createContext({
-  draggedUrl: null as string | null,
-  setDraggedUrl: (draggedUrl: string | null) => {},
-  dropHistory: [] as DropHistory[],
-  setDropHistory: (dropHistory: SetStateAction<DropHistory[]>) => {},
+  pages: [] as Page[],
+  setPages: (pages: SetStateAction<Page[]>) => {},
+  readingUrl: null as string | null,
+  setReadingUrl: (url: string | null) => {},
 });
 
 export default ResearchWritingContext;

@@ -5,7 +5,13 @@ import Header from "./Header";
 /*
 One column, all black: Header, content, footer.
 */
-export default function DefaultLayout({ children }: { children: ReactNode }) {
+export default function DefaultLayout({
+  children,
+  white = false,
+}: {
+  children: ReactNode;
+  white?: boolean;
+}) {
   return (
     <div
       style={{
@@ -14,7 +20,6 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
         minHeight: "100vh",
         boxSizing: "border-box",
       }}
-      className="black"
     >
       <Header>AugmateAI</Header>
       <div
@@ -24,6 +29,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
           padding: "0 2rem",
           flexGrow: "1",
         }}
+        className={white ? "white" : "black"}
       >
         {children}
       </div>

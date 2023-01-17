@@ -118,14 +118,14 @@ export class Prompt<Variables extends { [key: string]: string }> {
   }
 }
 
-export interface SearchResultPage {
+export interface Page {
   title: string;
   url: string;
   snippet: string;
 }
 
 export interface SearchResults {
-  pages: SearchResultPage[];
+  pages: Page[];
   related_searches: string[];
   query: string;
 }

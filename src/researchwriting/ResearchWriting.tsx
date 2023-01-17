@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { api } from "../api";
+import { api, Page } from "../api";
 import DefaultLayout from "../DefaultLayout";
 import EventLoggingProvider from "./EventLogging";
 import PageContentCacheProvider from "./PageContentCache";
-import RWResearchPanel from "./ResearchPanel";
-import RWTextArea from "./ResearchTextarea";
 import ResearchWritingContext from "./ResearchWritingContext";
+import RWWritingPanel from "./WritingPanel";
 
 export async function getCompletionBasedOnSearchResult(
   knowledge: string,
@@ -36,92 +35,17 @@ export async function getSearchQueries(question: string): Promise<string[]> {
 Creates a word processor which is augmented with AI problem-solving tools.
 */
 export default function ResearchWriting() {
-  const [draggedUrl, setDraggedUrl] = useState<string | null>(null);
-  const [dropHistory, setDropHistory] = useState<
-    { url: string; title: string }[]
-  >([]);
+  const [pages, setPages] = useState([] as Page[]);
+  const [readingUrl, setReadingUrl] = useState<string | null>(null);
 
   return (
     <ResearchWritingContext.Provider
-      value={{ draggedUrl, setDraggedUrl, dropHistory, setDropHistory }}
+      value={{ pages, setPages, readingUrl, setReadingUrl }}
     >
       <EventLoggingProvider>
         <PageContentCacheProvider>
-          <DefaultLayout>
-            <h1>Research Writing</h1>
-            {/*
-                minHeight: 0 might not seem to make sense here, but by default, it's minHeight: auto. This causes overflows of the flex box.
-                More info can be found here: https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container
-                
-                flex-grow ensures that the element stretches to the full width (or height) of the enclosing flexbox.
-              */}
-            <div style={{ display: "flex", minHeight: 0, flexGrow: 1 }}>
-              <div
-                style={{
-                  flex: 4,
-                  display: "flex",
-                  flexDirection: "column",
-                  paddingRight: "2rem",
-                }}
-              >
-                <h3 style={{ margin: "0.5rem 0" }}>Writing Panel</h3>
-                <span style={{ fontSize: "0.875rem" }}>
-                  Powered by large language models. See the homepage:{" "}
-                  <a href="https://augmateai.michaelfatemi.com/">AugmateAI</a>
-                  <br />
-                  Developed by Michael Fatemi <br />
-                  <br />
-                  <b>Usage</b>
-                  <ul style={{ marginTop: 0 }}>
-                    <li>
-                      Start typing anything and press <code>ctrl + enter</code>{" "}
-                      to generate text with AI. Press <code>tab</code> or{" "}
-                      <code>right arrow</code> to complete them.
-                    </li>
-                    <li>
-                      You can incorporate information from outside sources now!
-                      Search something on the side and drag and drop it into the
-                      textbox to create a completion using the source.
-                    </li>
-                  </ul>
-                </span>
-                <div
-                  style={{
-                    position: "relative",
-                    height: "100%",
-                    flexGrow: 1,
-                  }}
-                >
-                  <RWTextArea />
-                </div>
-              </div>
-              <div
-                style={{ flex: 1, display: "flex", flexDirection: "column" }}
-              >
-                <RWResearchPanel />
-              </div>
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  paddingLeft: "1rem",
-                  flexGrow: 0,
-                  minWidth: "10rem",
-                }}
-              >
-                <p style={{ marginTop: "0.5rem" }}>Pages used</p>
-                {dropHistory.map((drop) => (
-                  <div key={drop.url} style={{ marginBottom: "0.5rem" }}>
-                    Dropped{" "}
-                    <a href={drop.url} className="dark_a">
-                      {drop.title}
-                    </a>{" "}
-                    ({drop.url})
-                  </div>
-                ))}
-              </div>
-            </div>
+          <DefaultLayout white>
+            <RWWritingPanel />
           </DefaultLayout>
         </PageContentCacheProvider>
       </EventLoggingProvider>
