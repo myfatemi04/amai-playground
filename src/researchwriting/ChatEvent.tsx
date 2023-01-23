@@ -9,7 +9,7 @@ export default function ChatEvent({ event }: { event: ChatEventType }) {
       <>
         <b style={{ fontSize: "0.75rem" }}>USER</b>
         <br />
-        {event.content}
+        <pre style={{ fontFamily: "inherit", margin: 0 }}>{event.content}</pre>
       </>
     );
   } else if (event.type === "assistant") {
@@ -18,7 +18,9 @@ export default function ChatEvent({ event }: { event: ChatEventType }) {
         <>
           <b style={{ fontSize: "0.75rem" }}>AI</b>
           <br />
-          {event.content.slice("!Say ".length)}
+          <pre style={{ fontFamily: "inherit", margin: 0 }}>
+            {event.content.slice("!Say ".length)}
+          </pre>
         </>
       );
     } else if (event.content.startsWith("!Search ")) {

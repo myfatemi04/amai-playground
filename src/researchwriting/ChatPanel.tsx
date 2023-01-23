@@ -22,6 +22,27 @@ export type ChatEventType = {
     }
 );
 
+export function serializeChat(chat: ChatEventType[]) {
+  return chat
+    .map((event) => {
+      if (event.type === "assistant") {
+        return "Assistant: " + event.content;
+      } else if (event.type === "search") {
+        return (
+          `Search results for "${event.query}":\n` +
+          event.content.pages.map(
+            (page) => `Page "${page.title}": "${page.snippet}"`
+          )
+        );
+      } else if (event.type === "user") {
+        return "User: " + event.content;
+      }
+      console.warn("Unknown event type", event);
+      return null;
+    })
+    .join("\n\n");
+}
+
 export default function ChatPanel() {
   const [input, setInput] = useState("");
   const { chat, setChat } = useContext(ResearchWritingContext);
@@ -30,26 +51,9 @@ export default function ChatPanel() {
   const [generating, setGenerating] = useState(false);
 
   const generateNext = useCallback(async () => {
-    let serializedPastEvents = chat
-      .map((event) => {
-        if (event.type === "assistant") {
-          return "Assistant: " + event.content;
-        } else if (event.type === "search") {
-          return (
-            `Search results for "${event.query}":\n` +
-            event.content.pages.map(
-              (page) => `Page "${page.title}": "${page.snippet}"`
-            )
-          );
-        } else if (event.type === "user") {
-          return "User: " + event.content;
-        }
-        console.warn("Unknown event type", event);
-        return null;
-      })
-      .join("\n\n");
+    let serializedPastEvents = serializeChat(chat);
     serializedPastEvents = serializedPastEvents.slice(
-      Math.max(0, serializedPastEvents.length - 4096)
+      Math.max(0, serializedPastEvents.length - 4096 * 2.5)
     );
     setGenerating(true);
     // Serialize past events.
@@ -59,7 +63,8 @@ export default function ChatPanel() {
         "Assistant: !" +
         (
           await api("generate_for_prompt", {
-            prompt_id: "639e6f8b96c0c9a18edd87c9",
+            prompt_id: "63cdf71b08976f877530d6d1",
+            // prompt_id: "639e6f8b96c0c9a18edd87c9", // old prompt
             variables: {
               previous_context: serializedPastEvents + "\n\n",
             },
@@ -136,6 +141,7 @@ export default function ChatPanel() {
       // Check if the assistant searched for something.
       if (mostRecent.content.startsWith("!Search ")) {
         const query = mostRecent.content.slice("!Search ".length);
+        // NOTE: This removes some of the search results, in an attempt to save characters.
         getSearchResults(query).then((results) => {
           setChat((chat) => [
             ...chat,
@@ -143,7 +149,10 @@ export default function ChatPanel() {
               type: "search",
               time: Date.now(),
               query,
-              content: results,
+              content: {
+                ...results,
+                pages: results.pages.slice(0, 5),
+              },
             },
           ]);
         });

@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
+import { SelectionRange } from "./ResearchWritingContext";
 
-export default function useCursor(textbox: HTMLTextAreaElement | null) {
-  const [cursor, setCursor] = useState<number>(0);
+export default function useSelectionRange(textbox: HTMLTextAreaElement | null) {
+  const [selection, setSelection] = useState<SelectionRange>({
+    start: 0,
+    end: 0,
+  });
 
   useEffect(() => {
     if (!textbox) {
       return;
     }
     const updateCursor = () => {
-      setCursor(textbox.selectionEnd);
+      setSelection({
+        start: textbox.selectionStart,
+        end: textbox.selectionEnd,
+      });
     };
     textbox.addEventListener("keydown", updateCursor);
     textbox.addEventListener("keyup", updateCursor);
@@ -24,5 +31,5 @@ export default function useCursor(textbox: HTMLTextAreaElement | null) {
     };
   }, [textbox]);
 
-  return cursor;
+  return selection;
 }

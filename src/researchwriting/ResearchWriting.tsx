@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api, Page } from "../api";
 import DefaultLayout from "../DefaultLayout";
 import ChatPanel, { ChatEventType } from "./ChatPanel";
 import EventLoggingProvider from "./EventLogging";
 import PageContentCacheProvider from "./PageContentCache";
-import ResearchWritingContext from "./ResearchWritingContext";
+import ResearchWritingContext, {
+  SelectionRange,
+} from "./ResearchWritingContext";
+import RevisionsPanel from "./RevisionsPanel";
 import RWWritingPanel from "./WritingPanel";
 
 // eslint-disable-next-line
@@ -41,14 +44,85 @@ export default function ResearchWriting() {
   const [pages, setPages] = useState([] as Page[]);
   const [chat, setChat] = useState([] as ChatEventType[]);
   const [readingUrl, setReadingUrl] = useState<string | null>(null);
+  const [textboxGenerationStatus, setTextboxGenerationStatus] = useState<
+    "idle" | "pending" | "error"
+  >("idle");
+  const [content, setContent] = useState("");
+  const [selection, setSelection] = useState<SelectionRange>({
+    start: 0,
+    end: 0,
+  });
+  const [inRevisingMode, setInRevisingMode] = useState(false);
+
+  const value = useMemo(
+    () => ({
+      pages,
+      setPages,
+      readingUrl,
+      setReadingUrl,
+      chat,
+      setChat,
+      textboxGenerationStatus,
+      setTextboxGenerationStatus,
+      content,
+      setContent,
+      selection,
+      setSelection,
+      inRevisingMode,
+      setInRevisingMode,
+    }),
+    [
+      chat,
+      content,
+      inRevisingMode,
+      pages,
+      readingUrl,
+      selection,
+      textboxGenerationStatus,
+    ]
+  );
 
   return (
-    <ResearchWritingContext.Provider
-      value={{ pages, setPages, readingUrl, setReadingUrl, chat, setChat }}
-    >
+    <ResearchWritingContext.Provider value={value}>
       <EventLoggingProvider>
         <PageContentCacheProvider>
           <DefaultLayout white fullscreen>
+            {inRevisingMode && (
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  zIndex: 1,
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    maxHeight: "calc(100% - 4rem)",
+                    width: "min(40rem, calc(100% - 4rem))",
+                    transform: "translate(-50%, -50%)",
+                    top: "50%",
+                    left: "50%",
+                    backgroundColor: "white",
+                    padding: "2rem",
+                    borderRadius: "0.5rem",
+                    fontSize: "0.875rem",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <button
+                    onClick={() => setInRevisingMode(false)}
+                    className="link"
+                    style={{ margin: "0.5rem 0" }}
+                  >
+                    Close window
+                  </button>
+                  <RevisionsPanel />
+                </div>
+              </div>
+            )}
             <div style={{ display: "flex", flexGrow: 1, minHeight: 0 }}>
               <div
                 style={{
@@ -61,7 +135,7 @@ export default function ResearchWriting() {
               </div>
               <div
                 style={{
-                  flex: 1,
+                  flex: 2,
                   display: "flex",
                   flexDirection: "column",
                   padding: "0 2rem",

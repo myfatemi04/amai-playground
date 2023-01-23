@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import RWResearchPanel from "./ResearchPanel";
 import RWTextArea from "./ResearchTextarea";
+import ResearchWritingContext from "./ResearchWritingContext";
 
 export default function RWWritingPanel() {
   const [docName, setDocName] = useState("Untitled document");
   const [researchWindowOpen, setResearchWindowOpen] = useState(false);
+  const { textboxGenerationStatus } = useContext(ResearchWritingContext);
 
   return (
     <>
@@ -46,6 +48,7 @@ export default function RWWritingPanel() {
           value={docName}
           onChange={(e) => setDocName(e.target.value)}
         />
+        {/* <pre>{content.slice(selection?.start, selection?.end)}</pre> */}
         <p style={{ marginBottom: 0 }}>
           Start typing anything and press <code>ctrl + enter</code> to generate
           text with AI. Press <code>tab</code> or <code>right arrow</code> to
@@ -58,6 +61,19 @@ export default function RWWritingPanel() {
         >
           Sources
         </button>
+        <p
+          style={{
+            textTransform: "uppercase",
+            fontSize: "0.75rem",
+            fontWeight: "bold",
+          }}
+        >
+          {textboxGenerationStatus === "pending"
+            ? "AI is writing"
+            : textboxGenerationStatus === "error"
+            ? "AI failed to generate"
+            : "AI is ready"}
+        </p>
       </div>
       <div
         style={{
