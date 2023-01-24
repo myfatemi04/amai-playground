@@ -3,6 +3,7 @@ import { api } from "../api";
 import { serializeChat } from "./ChatPanel";
 import "./diff_match_patch";
 import ResearchWritingContext from "./ResearchWritingContext";
+import diff_match_patch from "./diff_match_patch";
 
 const dmp = new diff_match_patch();
 
@@ -112,9 +113,9 @@ export default function RevisionsPanel() {
             <pre style={{ fontFamily: "inherit" }}>
               {!isDifferenceTab
                 ? revision
-                : difference.map(([a, value]: any) => {
-                    let color = a < 0 ? "red" : a > 0 ? "green" : "black";
-                    return <span style={{ color }}>{value}</span>;
+                : difference.map((v: any) => {
+                    let color = v[0] < 0 ? "red" : v[0] > 0 ? "green" : "black";
+                    return <span style={{ color }}>{v[1]}</span>;
                   })}
             </pre>
           </>

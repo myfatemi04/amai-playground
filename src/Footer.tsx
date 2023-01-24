@@ -8,7 +8,7 @@ export default function Footer() {
       }}
     >
       <span>
-        © 2022 AugmateAI, by{" "}
+        © 2023 AugmateAI, by{" "}
         <a href="https://michaelfatemi.com/" target="_blank" rel="noreferrer">
           Michael Fatemi
         </a>
