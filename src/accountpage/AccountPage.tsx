@@ -30,6 +30,15 @@ export default function AccountPage() {
         <br />
         <b>Email</b> {user.email}
       </p>
+      <button
+      className="link"
+        onClick={() => {
+          window.localStorage.removeItem("accessToken");
+          window.location.href = "/";
+        }}
+      >
+        Sign out
+      </button>
       <h1>Usage History</h1>
       <pre>{JSON.stringify(stripeUsage)}</pre>
       <pre>{JSON.stringify(results)}</pre>
