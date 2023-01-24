@@ -8,8 +8,18 @@ export default function AccountPage() {
 
   const [results, setResults] = useState<any | null>(null);
 
+  const [stripeUsage, setStripeUsage] = useState<{
+    text_generation: number;
+  } | null>(null);
+
   useEffect(() => {
-    api("list_usage", {collection: "retrieval_enhancement_usage"}).then(setResults);
+    api("list_usage", { collection: "retrieval_enhancement_usage" }).then(
+      setResults
+    );
+
+    api("check_stripe_usage").then((results) => {
+      setStripeUsage(results);
+    });
   }, []);
 
   return (
@@ -21,6 +31,7 @@ export default function AccountPage() {
         <b>Email</b> {user.email}
       </p>
       <h1>Usage History</h1>
+      <pre>{JSON.stringify(stripeUsage)}</pre>
       <pre>{JSON.stringify(results)}</pre>
     </DefaultLayout>
   );
