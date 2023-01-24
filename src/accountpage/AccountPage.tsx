@@ -17,7 +17,7 @@ export default function AccountPage() {
       setResults
     );
 
-    api("check_stripe_usage").then((results) => {
+    api("stripe", {request_type: "get_usage"}).then((results) => {
       setStripeUsage(results);
     });
   }, []);

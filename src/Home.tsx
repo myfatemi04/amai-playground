@@ -25,9 +25,8 @@ export default function Home() {
             textShadow: "0 0 0.25rem rgba(255, 255, 255, 0.5)",
           }}
         >
-          Become a 10x creator
+          Work faster with AI
         </h1>
-        <p>Accelerate yourself with AI.</p>
         <div
           style={{ display: "flex", marginTop: "3rem", marginBottom: "3rem" }}
         >
@@ -65,6 +64,17 @@ export default function Home() {
               >
                 AI Writing
               </Button>
+              <Button
+                background="#111111"
+                foreground="white"
+                border="0.1rem solid #f22"
+                margin="0 0 0 1rem"
+                onClick={() => {
+                  window.location.href = "/demo";
+                }}
+              >
+                Demo
+              </Button>
             </>
           )}
         </div>
@@ -73,7 +83,7 @@ export default function Home() {
           <a href="https://docs.google.com/forms/d/e/1FAIpQLSck6ey9n-hTx1C87m07JTMkK9-KEKNWmQlQYEorkANDnGqKDw/viewform">
             this form
           </a>{" "}
-          to {!user && "request access or"} provide feedback
+          to provide feedback
         </span>
         <div
           style={{

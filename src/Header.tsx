@@ -9,8 +9,7 @@ function Header({ children }: { children: ReactNode }) {
       style={{
         display: "flex",
         alignItems: "center",
-        marginBottom: "0.5rem",
-        padding: "2rem",
+        padding: "2rem 2rem 2.5rem",
         width: "100%",
         boxSizing: "border-box",
       }}

@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AccountPage from "./accountpage/AccountPage";
+import DemoPage from "./Demo";
 import Generation from "./Generation";
 import GoogleCallback from "./GoogleCallback";
 import Home from "./Home";
@@ -52,6 +53,14 @@ root.render(
             element={
               <RequireAuth>
                 <YoutubeVideos />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="demo"
+            element={
+              <RequireAuth>
+                <DemoPage />
               </RequireAuth>
             }
           />
