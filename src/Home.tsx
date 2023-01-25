@@ -5,7 +5,11 @@ import Header from "./Header";
 import { UserContext } from "./UserProvider";
 
 export default function Home() {
-  const { user } = useContext(UserContext);
+  const { user, pending } = useContext(UserContext);
+
+  if (pending) {
+    return null;
+  }
 
   return (
     <>
@@ -43,7 +47,7 @@ export default function Home() {
             </Button>
           ) : (
             <>
-              <Button
+              {/* <Button
                 background="#111111"
                 foreground="white"
                 border="0.1rem solid #f22"
@@ -52,7 +56,7 @@ export default function Home() {
                 }}
               >
                 AI Reading
-              </Button>
+              </Button> */}
               <Button
                 background="#111111"
                 foreground="white"
@@ -62,18 +66,7 @@ export default function Home() {
                   window.location.href = "/researchwriting";
                 }}
               >
-                AI Writing
-              </Button>
-              <Button
-                background="#111111"
-                foreground="white"
-                border="0.1rem solid #f22"
-                margin="0 0 0 1rem"
-                onClick={() => {
-                  window.location.href = "/demo";
-                }}
-              >
-                Demo
+                Start writing
               </Button>
             </>
           )}
@@ -83,7 +76,7 @@ export default function Home() {
           <a href="https://docs.google.com/forms/d/e/1FAIpQLSck6ey9n-hTx1C87m07JTMkK9-KEKNWmQlQYEorkANDnGqKDw/viewform">
             this form
           </a>{" "}
-          to provide feedback
+          to provide feedback. Try the <a href="/demo">demo</a>!
         </span>
         <div
           style={{

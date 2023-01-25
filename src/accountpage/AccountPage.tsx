@@ -54,29 +54,6 @@ export default function AccountPage() {
         <b>Name</b> {user.name}
         <br />
         <b>Email</b> {user.email}
-        {subscriptionCheckComplete &&
-          (subscription ? (
-            !subscription.cancel_at_period_end ? (
-              <>
-                <br />
-                You are subscribed.{" "}
-                <button onClick={unsubscribe}>Cancel at end of cycle</button>
-              </>
-            ) : (
-              <>
-                <br />
-                You are subscribed, but your subscription will end at the end of
-                the current billing cycle.{" "}
-                <button onClick={subscribe}>Resubscribe</button>
-              </>
-            )
-          ) : (
-            <>
-              <br />
-              You are not subscribed.
-              <button onClick={subscribe}>Subscribe</button>
-            </>
-          ))}
         <br />
         <button
           style={{ marginTop: "1rem" }}
@@ -88,6 +65,57 @@ export default function AccountPage() {
           Sign out
         </button>
       </p>
+
+      <h1>Subscription</h1>
+      <p>We partner with Stripe to streamline the billing process.</p>
+      {subscriptionCheckComplete ? (
+        subscription ? (
+          <>
+            {!subscription.cancel_at_period_end ? (
+              <>
+                <p>
+                  You are subscribed.{" "}
+                  <a
+                    href="https://billing.stripe.com/p/login/6oEdUJ5jr2Qqd8Y8ww"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Manage your subscription
+                  </a>
+                  <div style={{ marginTop: "1rem" }}>
+                    <button onClick={unsubscribe}>
+                      Cancel at end of cycle
+                    </button>
+                  </div>
+                </p>
+              </>
+            ) : (
+              <>
+                <p>
+                  Your subscription will end at the end of the current billing
+                  cycle.{" "}
+                  <a
+                    href="https://billing.stripe.com/p/login/6oEdUJ5jr2Qqd8Y8ww"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Manage your subscription
+                  </a>
+                </p>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <br />
+            You are not subscribed.
+            <button onClick={subscribe}>Subscribe</button>
+          </>
+        )
+      ) : (
+        <p>Checking your subscription status...</p>
+      )}
+
       {stripeUsage ? (
         <>
           <h3>Monthly Usage</h3>
@@ -99,7 +127,9 @@ export default function AccountPage() {
           </p>
           <p>An invoice will automatically be sent to your email by Stripe.</p>
         </>
-      ) : null}
+      ) : (
+        <p>Loading monthly usage</p>
+      )}
     </DefaultLayout>
   );
 }
