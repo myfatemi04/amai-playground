@@ -8,6 +8,7 @@ import Home from "./Home";
 import "./index.scss";
 import Interactive from "./interactive/Interactive";
 import NotFound from "./NotFound";
+import PaymentsPage from "./PaymentsPage";
 import PromptDesigner from "./promptdesigner/PromptDesigner";
 import Rap from "./promptexamples/Rap";
 import reportWebVitals from "./reportWebVitals";
@@ -131,6 +132,14 @@ root.render(
             element={
               <RequireAuth>
                 <AccountPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="payments"
+            element={
+              <RequireAuth>
+                <PaymentsPage />
               </RequireAuth>
             }
           />
