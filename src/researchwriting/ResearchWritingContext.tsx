@@ -1,19 +1,17 @@
 import { createContext, SetStateAction } from "react";
-import { Page } from "../api";
-import { ChatEventType } from "./ChatPanel";
 
 export type SelectionRange = {
   start: number;
   end: number;
 };
 
+export type Suggestion = {
+  startIndex: number;
+  endIndex: number;
+  content: string;
+};
+
 const ResearchWritingContext = createContext({
-  pages: [] as Page[],
-  setPages: (pages: SetStateAction<Page[]>) => {},
-  readingUrl: null as string | null,
-  setReadingUrl: (url: string | null) => {},
-  chat: [] as ChatEventType[],
-  setChat: (chat: SetStateAction<ChatEventType[]>) => {},
   textboxGenerationStatus: "idle" as "idle" | "pending" | "error",
   setTextboxGenerationStatus: (status: "idle" | "pending" | "error") => {},
   content: "" as string,
@@ -22,6 +20,8 @@ const ResearchWritingContext = createContext({
   setSelection: (selection: SetStateAction<SelectionRange>) => {},
   inRevisingMode: false,
   setInRevisingMode: (inRevisingMode: boolean) => {},
+  suggestions: [] as Suggestion[],
+  setSuggestions: (suggestions: SetStateAction<Suggestion[]>) => {},
 });
 
 export default ResearchWritingContext;

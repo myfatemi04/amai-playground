@@ -1,14 +1,13 @@
 import { useCallback, useContext, useMemo, useState } from "react";
 import { api } from "../api";
-import { serializeChat } from "./ChatPanel";
 import "./diff_match_patch";
-import ResearchWritingContext from "./ResearchWritingContext";
 import diff_match_patch from "./diff_match_patch";
+import ResearchWritingContext from "./ResearchWritingContext";
 
 const dmp = new diff_match_patch();
 
 export default function RevisionsPanel() {
-  const { content, setContent, selection, chat, setInRevisingMode } =
+  const { content, setContent, selection, setInRevisingMode } =
     useContext(ResearchWritingContext);
   const [instructions, setInstructions] = useState("");
   const selectedText = useMemo(
@@ -38,7 +37,7 @@ export default function RevisionsPanel() {
         variables: {
           text: selectedText,
           instructions,
-          previous_context: serializeChat(chat),
+          previous_context: "<none>",
         },
       });
       setStatus("idle");
@@ -46,7 +45,7 @@ export default function RevisionsPanel() {
     } catch (e) {
       setStatus("error");
     }
-  }, [chat, instructions, selectedText]);
+  }, [instructions, selectedText]);
 
   const acceptRevision = useCallback(() => {
     setInRevisingMode(false);

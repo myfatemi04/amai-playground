@@ -1,49 +1,39 @@
-import { useMemo, useState } from "react";
-import { api, Page } from "../api";
-import DefaultLayout from "../DefaultLayout";
-import ChatPanel, { ChatEventType } from "./ChatPanel";
+import { useCallback, useMemo, useState } from "react";
+import AugmentedTextarea from "./AugmentedTextarea";
 import EventLoggingProvider from "./EventLogging";
+import getSuggestions from "./getSuggestions";
 import PageContentCacheProvider from "./PageContentCache";
 import ResearchWritingContext, {
   SelectionRange,
+  Suggestion
 } from "./ResearchWritingContext";
 import RevisionsPanel from "./RevisionsPanel";
-import RWWritingPanel from "./WritingPanel";
 
-// eslint-disable-next-line
-async function getCompletionBasedOnSearchResult(
-  knowledge: string,
-  context: string
-) {
-  const { completion } = await api("generate_for_prompt", {
-    prompt_id: "639639a9fe3937783e18ce52",
-    variables: { knowledge, context },
-  });
-  return completion as string;
+function textboxGenerationStatusText(status: string) {
+  return status === "pending"
+    ? "AI is writing"
+    : status === "error"
+    ? "AI failed to generate"
+    : "AI is ready";
 }
 
-// eslint-disable-next-line
-async function getSearchQueries(question: string): Promise<string[]> {
-  const { completion } = await api("generate_for_prompt", {
-    prompt_id: "63962e8cfe3937783e18ce51",
-    variables: { question },
-  });
-  return completion.map((completion: string) => {
-    if (completion.startsWith(`"`) && completion.endsWith(`"`)) {
-      return completion.slice(1, completion.length - 1);
-    } else {
-      return completion;
-    }
-  });
+function features() {
+  return (
+    <>
+      <b>Features</b>
+      <ul>
+        <li>
+          Press <code>ctrl + enter</code> to generate the next few words
+        </li>
+        <li>
+          Select text and press <code>ctrl + enter</code> to revise it
+        </li>
+      </ul>
+    </>
+  );
 }
 
-/*
-Creates a word processor which is augmented with AI problem-solving tools.
-*/
 export default function ResearchWriting() {
-  const [pages, setPages] = useState([] as Page[]);
-  const [chat, setChat] = useState([] as ChatEventType[]);
-  const [readingUrl, setReadingUrl] = useState<string | null>(null);
   const [textboxGenerationStatus, setTextboxGenerationStatus] = useState<
     "idle" | "pending" | "error"
   >("idle");
@@ -53,15 +43,10 @@ export default function ResearchWriting() {
     end: 0,
   });
   const [inRevisingMode, setInRevisingMode] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
   const value = useMemo(
     () => ({
-      pages,
-      setPages,
-      readingUrl,
-      setReadingUrl,
-      chat,
-      setChat,
       textboxGenerationStatus,
       setTextboxGenerationStatus,
       content,
@@ -70,23 +55,41 @@ export default function ResearchWriting() {
       setSelection,
       inRevisingMode,
       setInRevisingMode,
+      suggestions,
+      setSuggestions,
     }),
-    [
-      chat,
-      content,
-      inRevisingMode,
-      pages,
-      readingUrl,
-      selection,
-      textboxGenerationStatus,
-    ]
+    [content, inRevisingMode, selection, suggestions, textboxGenerationStatus]
   );
+
+  const createSuggestions = useCallback(async () => {
+    const suggestions = await getSuggestions(content);
+    const compiledSuggestions = [];
+    for (const suggestion of suggestions) {
+      const startIndex = content.indexOf(suggestion.text);
+      compiledSuggestions.push({
+        startIndex,
+        endIndex: startIndex + suggestion.text.length,
+        content: suggestion.content,
+      });
+    }
+    setSuggestions(compiledSuggestions);
+  }, [content]);
 
   return (
     <ResearchWritingContext.Provider value={value}>
       <EventLoggingProvider>
         <PageContentCacheProvider>
-          <DefaultLayout white fullscreen>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              boxSizing: "border-box",
+              minHeight: "100vh",
+              padding: "1rem",
+            }}
+          >
+            <h1 style={{ textAlign: "center" }}>write.ai</h1>
+            <button onClick={createSuggestions}>Create suggestions</button>
             {inRevisingMode && (
               <div
                 style={{
@@ -123,29 +126,18 @@ export default function ResearchWriting() {
                 </div>
               </div>
             )}
-            <div style={{ display: "flex", flexGrow: 1, minHeight: 0 }}>
-              <div
-                style={{
-                  flex: 3,
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <RWWritingPanel />
-              </div>
-              <div
-                style={{
-                  flex: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  padding: "0 2rem",
-                  overflowY: "auto",
-                }}
-              >
-                <ChatPanel />
-              </div>
+            <div
+              style={{
+                position: "relative",
+                margin: "0 auto",
+                width: "8.5in",
+                height: "11in",
+                overflow: "hidden",
+              }}
+            >
+              <AugmentedTextarea />
             </div>
-          </DefaultLayout>
+          </div>
         </PageContentCacheProvider>
       </EventLoggingProvider>
     </ResearchWritingContext.Provider>
