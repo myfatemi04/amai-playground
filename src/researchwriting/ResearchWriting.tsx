@@ -5,7 +5,7 @@ import getSuggestions from "./getSuggestions";
 import PageContentCacheProvider from "./PageContentCache";
 import ResearchWritingContext, {
   SelectionRange,
-  Suggestion
+  Suggestion,
 } from "./ResearchWritingContext";
 import RevisionsPanel from "./RevisionsPanel";
 
@@ -89,7 +89,20 @@ export default function ResearchWriting() {
             }}
           >
             <h1 style={{ textAlign: "center" }}>write.ai</h1>
-            <button onClick={createSuggestions}>Create suggestions</button>
+            <div style={{ margin: "0 auto 0.5rem" }}>
+              <button
+                onClick={createSuggestions}
+                style={{
+                  backgroundColor: "white",
+                  padding: "0.5rem",
+                  border: "1.5px solid #666666",
+                  borderRadius: "0.25rem",
+                  cursor: "pointer",
+                }}
+              >
+                Create suggestions
+              </button>
+            </div>
             {inRevisingMode && (
               <div
                 style={{

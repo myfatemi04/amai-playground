@@ -99,6 +99,17 @@ export default function AugmentedTextarea({
 
   const scrollHeight = useScrollHeight(ref.current);
 
+  useEffect(() => {
+    if (selectionRange.start === selectionRange.end) {
+      // Set the hovered suggestion to the one that the cursor is currently on.
+      const hoveredSuggestionIndex = suggestions.findIndex(
+        ({ startIndex, endIndex }) =>
+          selectionRange.start >= startIndex && selectionRange.start <= endIndex
+      );
+      setHoveredSuggestion(hoveredSuggestionIndex);
+    }
+  }, [selectionRange, suggestions]);
+
   return (
     <>
       <div
@@ -109,9 +120,6 @@ export default function AugmentedTextarea({
           pointerEvents: "none",
           right: scrollbarWidth,
           top: -scrollHeight,
-        }}
-        onClick={(e) => {
-          e.preventDefault();
         }}
       >
         {suggestions.map(
@@ -130,7 +138,6 @@ export default function AugmentedTextarea({
               <Fragment key={endIndex}>
                 <pre
                   style={{
-                    visibility: "hidden",
                     margin: 0,
                     fontFamily: textareaStyle.fontFamily,
                     display: "inline",
@@ -145,7 +152,7 @@ export default function AugmentedTextarea({
                     fontFamily: textareaStyle.fontFamily,
                     display: "inline",
                     whiteSpace: "pre-wrap",
-                    // color: "black",
+                    color: "black",
                     backgroundClip: "text",
                     background:
                       "linear-gradient(90deg, #00ff00, rgba(0, 255, 0, 0.2))",
@@ -153,23 +160,12 @@ export default function AugmentedTextarea({
                     // textDecoration: "underline",
                     position: "relative",
                     // Must be re-enabled because the enclosing element has pointerEvents: "none"
-                    pointerEvents: "auto",
+                    // pointerEvents: "auto",
                   }}
-                  onMouseOver={() => setHoveredSuggestion(i)}
-                  onMouseOut={() => setHoveredSuggestion(-1)}
+                  // onMouseOver={() => setHoveredSuggestion(i)}
+                  // onMouseOut={() => setHoveredSuggestion(-1)}
                 >
                   {contentForThisSuggestion}
-
-                  {/* <div
-                    style={{
-                      position: "absolute",
-                      top: "0px",
-                      color: "red",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    [suggested]
-                  </div> */}
 
                   {hoveredSuggestion === i && (
                     <>
@@ -197,18 +193,20 @@ export default function AugmentedTextarea({
             );
           }
         )}
-        <pre
-          style={{
-            // visibility: "hidden",
-            margin: 0,
-            fontFamily: textareaStyle.fontFamily,
-            display: "inline",
-            whiteSpace: "pre-wrap",
-            color: "green",
-          }}
-        >
-          {content.slice(suggestions[suggestions.length - 1]?.endIndex)}
-        </pre>
+        {
+          <pre
+            style={{
+              // visibility: "hidden",
+              margin: 0,
+              fontFamily: textareaStyle.fontFamily,
+              display: "inline",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {content.slice(suggestions[suggestions.length - 1]?.endIndex || 0)}
+            {/* {JSON.stringify(suggestions)} */}
+          </pre>
+        }
       </div>
       <textarea
         disabled={status === "pending"}
@@ -216,7 +214,13 @@ export default function AugmentedTextarea({
         value={content}
         rows={40}
         cols={80}
-        style={textareaStyle}
+        style={{
+          ...textareaStyle,
+          color: "transparent",
+          caretColor: textareaStyle.color || "black",
+          backgroundColor: "transparent",
+          zIndex: 0,
+        }}
         onChange={(e) => setContent(e.target.value)}
         onKeyDown={(e) => {
           if (
