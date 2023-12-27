@@ -1,4 +1,6 @@
-# Getting Started with Create React App
+# AugmateAI Playground
+
+This provides a page where users can get comprehensive information from language models through retrieved information on the internet, as well as create text completions with retrieved content.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
